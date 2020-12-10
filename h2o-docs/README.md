@@ -22,17 +22,17 @@ Note that there are also some directories under the **/product** folder from the
 Run the following to install Sphinx and the RTD theme. 
 
 ```
-python3 -m pip install sphinx==2.1.1
-python3 -m pip install sphinx_rtd_theme==0.2.4
+python -m pip install sphinx==2.1.1
+python -m pip install sphinx_rtd_theme==0.2.4
 ```
 
 Run the following to install the additional required extensions:
 
 ```
-python3 -m pip install recommonmark
-python3 -m pip sphinx_prompt==1.1.0
-python3 -m pip sphinx-tabs==1.1.12
-python3 -m pip install sphinx_substitution_extensions==2019.6.15.0
+python -m pip install recommonmark
+python -m pip install sphinx_prompt==1.1.0
+python -m pip install sphinx-tabs==1.1.12
+python -m pip install sphinx_substitution_extensions==2019.6.15.0
 
 ```
 
