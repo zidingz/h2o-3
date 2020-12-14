@@ -103,6 +103,31 @@ Squared Error Equation:
 **Note**: For the sake of simplicity, we have omitted weights in the equations above. In reality, H2O includes weights in its calculation of squared error.
 
 
+Show variable importance in H2O-3 model
+---------------------------------------
+
+The below example shows how to get variable importance from the GBM model. If other models support variable importance,
+then the way of showing is similar to the example below.
+
+.. tabs::
+   .. code-tab:: r R
+
+      model <- h2o.gbm(...)
+      varimp <- h2o.varimp(model)
+
+   .. code-tab:: python
+
+      model = H2OGradientBoostingEstimator(...)
+      model.train(...)
+      varimp = model.varimp(use_pandas=True)
+
+   .. code-tab:: Java Java MOJO Model
+
+      MojoModel modelMojo = MojoModel.load("GBM_model.zip", true);
+      EasyPredictModelWrapper.Config config = new EasyPredictModelWrapper.Config().setModel(modelMojo);
+      EasyPredictModelWrapper model = new EasyPredictModelWrapper(config);
+      model.varimp();
+
 References
 ----------
 
