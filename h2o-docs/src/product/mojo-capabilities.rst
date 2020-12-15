@@ -3,43 +3,41 @@
 MOJO Capabilities
 -----------------
 
-This section describes basics of every day work with MOJO model in H2O-3.
+This section describes the basics of working with the MOJO model in H2O-3.
 
-Gen-model package breakdown?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+About H2O Generated MOJO Models
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The source `here <productionizing.html>`__ provides a lot of information about MOJOs and how to get them.
-In this place is a breakdown the package documentation `POJO and MOJO Model Javadoc <http://docs.h2o.ai/h2o/latest-stable/h2o-genmodel/javadoc/index.html>`__.
-The h2o-genmodel API contains:
+For information about quick starting and building MOJOs, look `here <productionizing.html>`__. For information on how to use the ``h2o-genmodel``, look `here <http://docs.h2o.ai/h2o/latest-stable/h2o-genmodel/javadoc/index.html>`__. 
+
+The ``h2o-genmodel`` API contains:
 
 - **hex.genmodel.algos**
 
-All algorithms supports MOJO can be found here. These models can be load and directly used to scoring or other model
-specific actions. For the documentation of the methods refer to javadoc of `GenModel class <http://docs.h2o.ai/h2o/latest-stable/h2o-genmodel/javadoc/hex/genmodel/GenModel.html>`__.
+All algorithms that support the MOJO model can be found here. These models can be loaded and directly used to score or perform other model-specific actions. For further documentation of the methods, refer to the javadoc of the `GenModel class <http://docs.h2o.ai/h2o/latest-stable/h2o-genmodel/javadoc/hex/genmodel/GenModel.html>`__.
 
 - **hex.genmodel.easy.EasyPredictModelWrapper**
 
-Wrapper for MOJO models to get easier and readable interface for scoring and other model specific actions.
+`This wrapper <http://docs.h2o.ai/h2o/latest-stable/h2o-genmodel/javadoc/hex/genmodel/easy/EasyPredictModelWrapper.html>`__ gives MOJO models an easy, readable interface for scoring and other model-specific actions.
 
 - **hex.genmodel.easy.prediction**
 
-All types of predictions that can EasyPredictModelWrapper.predict(). For more information refer to the `javadoc of the classes <http://docs.h2o.ai/h2o/latest-stable/h2o-genmodel/javadoc/hex/genmodel/easy/prediction/AbstractPrediction.html>`__.
+This gives the predictions that can be called from the ``EasyPredictModelWrapper.predict()`` command. For more information, refer to the `javadoc of the prediction classes <http://docs.h2o.ai/h2o/latest-stable/h2o-genmodel/javadoc/hex/genmodel/easy/prediction/AbstractPrediction.html>`__.
 
 - **hex.genmodel.easy.CategoricalEncoder**
 
-Classes from this interface can be used for preprocess raw data values to proper Categorical values what model expects.
+Classes from `this interface <http://docs.h2o.ai/h2o/latest-stable/h2o-genmodel/javadoc/hex/genmodel/easy/CategoricalEncoder.html>`__ can be used to preprocess raw data values to the proper categorical values expected by the model.
 
 - **hex.genmodel.attributes.metrics**
 
-Different metrics for model specific needs.
+`This package <http://docs.h2o.ai/h2o/latest-stable/h2o-genmodel/javadoc/hex/genmodel/attributes/metrics/package-summary.html>`__ provides the different metrics for model-specific needs.
 
 - **hex.genmodel.tools**
 
-Java command line tools for various type of application. For example tools for printing decision trees, reading a CSV file and making predictions, reading a CSV file and munging it, and more..
+These java command line `tools <http://docs.h2o.ai/h2o/latest-stable/h2o-genmodel/javadoc/hex/genmodel/tools/package-summary.html>`__ can be used for various types of applications: printing decision trees, reading a CSV file and making predictions, reading a CSV file and munging it, etc.
 
-
-How to predict value with mojo?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Predicting Values with MOJO
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. tabs::
    .. code-tab:: java Raw MOJO
@@ -64,17 +62,15 @@ How to predict value with mojo?
         AnomalyDetectionPrediction p = (AnomalyDetectionPrediction) model.predict(row);
         System.out.println("[" + p.normalizedScore + ", " + p.score + "]");
 
+Metadata Contained in the MOJO Model
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
-What metadata MOJO model contain?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-All of h2o-3 models contains some metadata. You can print them in python by calling:
+All h2o-3 models contains some metadata. To access this, type the following respective commands:
 
 .. tabs::
     .. code-tab:: r R
 
-        Just write model variable name to console.
+        Type the <model variable name> within the console.
 
     .. code-tab:: python
 
@@ -85,7 +81,7 @@ All of h2o-3 models contains some metadata. You can print them in python by call
         model._model_json['output']
 
         # Description of available keys
-        model._model_json['output']['help'
+        model._model_json['output']['help']
 
     .. code-tab:: Java Java MOJO Model
 
@@ -93,7 +89,7 @@ All of h2o-3 models contains some metadata. You can print them in python by call
         MojoModel model = MojoModel.load("GBM_model.zip", true);
         ModelAttributes attributes = model._modelAttributes;
 
-All of the MOJO models contain `following attributes <http://docs.h2o.ai/h2o/latest-stable/h2o-genmodel/javadoc/hex/genmodel/attributes/ModelAttributes.html>`__:
+All MOJO models contain the `following attributes <http://docs.h2o.ai/h2o/latest-stable/h2o-genmodel/javadoc/hex/genmodel/attributes/ModelAttributes.html>`__:
 
     .. code:: java
 
@@ -124,32 +120,43 @@ All of the MOJO models contain `following attributes <http://docs.h2o.ai/h2o/lat
         // Model parameters setting when the model was built
         attributes.getModelParameters();
 
+Accessing Model Trees
+'''''''''''''''''''''
 
-In example bellow is a way how to get number of trees from model.
-
+The following example shows a way to access the number of trees from the model:
 
 .. tabs::
    .. code-tab:: r R
 
+      # Build and train your model
       model <- h2o.randomForest(...)
+
+      # Print the number of trees
       print(paste("Number of Trees: ", model@allparameters$ntrees))
 
    .. code-tab:: python
 
+      # Build and train your model
       model = H2ORandomForestEstimator(...)
       model.train(...)
+
+      # Print the number of trees
       print("Number of Trees: {}".format(model._model_json["output"]["model_summary"]["number_of_trees"]))
 
    .. code-tab:: Java Java MOJO Model
 
+      // Load the MOJO model
       MojoModel model = MojoModel.load("rf_model.zip", true);
+
+      // Retrieve the model attributes
       ModelAttributes attributes = model._modelAttributes;
       System.out.print(attributes.getModelSummary().getColHeaders()[1] + ": ");
       System.out.println(attributes.getModelSummary().getCell(1,0));
 
+ModelAttributes Subclasses
+''''''''''''''''''''''''''
 
-Subclasses of ModelAttributes are used to handle model specific attributes, for example variable importance:
-
+Subclasses of `ModelAttributes <http://docs.h2o.ai/h2o/latest-stable/h2o-genmodel/javadoc/hex/genmodel/attributes/ModelAttributes.html>`__ are used to handle model-specific attributes (e.g. Variable Importance).
 
 .. tabs::
    .. code-tab:: java Raw MOJO
