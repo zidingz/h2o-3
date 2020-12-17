@@ -21,6 +21,8 @@ public class GLMV3 extends ModelBuilderSchema<GLM,GLMV3,GLMV3.GLMParametersV3> {
             "training_frame",
             "validation_frame",
             "nfolds",
+            "checkpoint",
+            "export_checkpoints_dir",
             "seed",
             "keep_cross_validation_models",
             "keep_cross_validation_predictions",
