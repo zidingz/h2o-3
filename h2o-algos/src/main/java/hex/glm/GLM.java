@@ -1532,8 +1532,9 @@ public class GLM extends ModelBuilder<GLMModel,GLMParameters,GLMOutput> {
               _model._betaCndCheckpoint = betaCnd;
               return;
             }
-            betaCnd = s == Solver.COORDINATE_DESCENT?COD_solve(gram,_state._alpha,_state.lambda())
-                    :ADMM_solve(gram.gram,gram.xy); // this will shrink betaCnd if needed but this call may be skipped
+            if (!_checkPointFirstIter)
+              betaCnd = s == Solver.COORDINATE_DESCENT ? COD_solve(gram, _state._alpha, _state.lambda())
+                      : ADMM_solve(gram.gram, gram.xy); // this will shrink betaCnd if needed but this call may be skipped
           }
           firstIter = false;
           _checkPointFirstIter = false;
