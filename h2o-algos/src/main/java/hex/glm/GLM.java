@@ -1529,6 +1529,7 @@ public class GLM extends ModelBuilder<GLMModel,GLMParameters,GLMOutput> {
           } else {
             if (!firstIter && !_state._lsNeeded && !progress(gram.beta, gram.likelihood) && !_checkPointFirstIter) {
               Log.info("DONE after " + (iterCnt-1) + " iterations (1)");
+              _model._betaCndCheckpoint = betaCnd;
               return;
             }
             betaCnd = s == Solver.COORDINATE_DESCENT?COD_solve(gram,_state._alpha,_state.lambda())
