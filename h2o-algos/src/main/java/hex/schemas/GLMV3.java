@@ -72,7 +72,6 @@ public class GLMV3 extends ModelBuilderSchema<GLM,GLMV3,GLMV3.GLMParametersV3> {
             "interactions",
             "interaction_pairs",
             "obj_reg",
-            "export_checkpoints_dir",
             "stopping_rounds",
             "stopping_metric",
             "stopping_tolerance",
