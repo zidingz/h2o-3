@@ -39,10 +39,10 @@ class H2OGeneralizedLinearEstimator(H2OEstimator):
                    "plug_values", "compute_p_values", "remove_collinear_columns", "intercept", "non_negative",
                    "max_iterations", "objective_epsilon", "beta_epsilon", "gradient_epsilon", "link", "rand_link",
                    "startval", "calc_like", "HGLM", "prior", "cold_start", "lambda_min_ratio", "beta_constraints",
-                   "max_active_predictors", "interactions", "interaction_pairs", "obj_reg", "export_checkpoints_dir",
-                   "stopping_rounds", "stopping_metric", "stopping_tolerance", "balance_classes",
-                   "class_sampling_factors", "max_after_balance_size", "max_confusion_matrix_size", "max_runtime_secs",
-                   "custom_metric_func", "auc_type"}
+                   "max_active_predictors", "interactions", "interaction_pairs", "obj_reg", "stopping_rounds",
+                   "stopping_metric", "stopping_tolerance", "balance_classes", "class_sampling_factors",
+                   "max_after_balance_size", "max_confusion_matrix_size", "max_runtime_secs", "custom_metric_func",
+                   "auc_type"}
 
     def __init__(self, **kwargs):
         super(H2OGeneralizedLinearEstimator, self).__init__()
@@ -1584,39 +1584,6 @@ class H2OGeneralizedLinearEstimator(H2OEstimator):
     def obj_reg(self, obj_reg):
         assert_is_type(obj_reg, None, numeric)
         self._parms["obj_reg"] = obj_reg
-
-
-    @property
-    def export_checkpoints_dir(self):
-        """
-        Automatically export generated models to this directory.
-
-        Type: ``str``.
-
-        :examples:
-
-        >>> import tempfile
-        >>> from os import listdir
-        >>> cars = h2o.import_file("https://s3.amazonaws.com/h2o-public-test-data/smalldata/junit/cars_20mpg.csv")
-        >>> predictors = ["displacement","power","weight","year"]
-        >>> response = "acceleration"
-        >>> train, valid = cars.split_frame(ratios=[.8])
-        >>> checkpoints = tempfile.mkdtemp()
-        >>> cars_glm = H2OGeneralizedLinearEstimator(export_checkpoints_dir=checkpoints,
-        ...                                          seed=1234)
-        >>> cars_glm.train(x=predictors,
-        ...                y=response,
-        ...                training_frame=train,
-        ...                validation_frame=valid)
-        >>> cars_glm.mse()
-        >>> len(listdir(checkpoints_dir))
-        """
-        return self._parms.get("export_checkpoints_dir")
-
-    @export_checkpoints_dir.setter
-    def export_checkpoints_dir(self, export_checkpoints_dir):
-        assert_is_type(export_checkpoints_dir, None, str)
-        self._parms["export_checkpoints_dir"] = export_checkpoints_dir
 
 
     @property
