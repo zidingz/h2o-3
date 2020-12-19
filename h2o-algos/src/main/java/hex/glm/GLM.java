@@ -2297,7 +2297,7 @@ public class GLM extends ModelBuilder<GLMModel,GLMParameters,GLMOutput> {
       }
 
       if (_parms.hasCheckpoint()) { // restore _state parameters
-        _state.copyCheckModel2State(_model._output, _gamColIndices);
+        _state.copyCheckModel2State(_model, _gamColIndices);
         if (_model._output._submodels.length == 1)
           _model._output._submodels = null; // null out submodel only for single alpha/lambda values
       }
