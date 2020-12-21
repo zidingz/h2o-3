@@ -31,7 +31,8 @@ class H2ORandomForestEstimator(H2OEstimator):
                    "sample_rate_per_class", "binomial_double_trees", "checkpoint", "col_sample_rate_change_per_level",
                    "col_sample_rate_per_tree", "min_split_improvement", "histogram_type", "categorical_encoding",
                    "calibrate_model", "calibration_frame", "distribution", "custom_metric_func",
-                   "export_checkpoints_dir", "check_constant_response", "gainslift_bins", "auc_type", "uplift_column"}
+                   "export_checkpoints_dir", "check_constant_response", "gainslift_bins", "auc_type", "uplift_column",
+                   "uplift_metric"}
 
     def __init__(self, **kwargs):
         super(H2ORandomForestEstimator, self).__init__()
@@ -1621,5 +1622,20 @@ class H2ORandomForestEstimator(H2OEstimator):
     def uplift_column(self, uplift_column):
         assert_is_type(uplift_column, None, str)
         self._parms["uplift_column"] = uplift_column
+
+
+    @property
+    def uplift_metric(self):
+        """
+        Divergence metric used to find best split when building an upplift tree.
+
+        Type: ``str``.
+        """
+        return self._parms.get("uplift_metric")
+
+    @uplift_metric.setter
+    def uplift_metric(self, uplift_metric):
+        assert_is_type(uplift_metric, None, str)
+        self._parms["uplift_metric"] = uplift_metric
 
 
