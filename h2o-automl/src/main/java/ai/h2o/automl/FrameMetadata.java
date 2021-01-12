@@ -510,8 +510,8 @@ public class FrameMetadata extends Iced {
       HistTask(DHistogram h, double mean) { _h = h; _mean=mean; }
       @Override public void setupLocal() { _h.init(); }
       @Override public void map( Chunk C ) {
-        double min = _h.find_min();
-        double max = _h.find_maxIn();
+        double min = _h.findMin();
+        double max = _h.findMaxIn();
         double[] bins = new double[_h._nbin];
         double colData;
         for(int r=0; r<C._len; ++r) {

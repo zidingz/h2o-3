@@ -31,7 +31,7 @@ class H2ORandomForestEstimator(H2OEstimator):
                    "sample_rate_per_class", "binomial_double_trees", "checkpoint", "col_sample_rate_change_per_level",
                    "col_sample_rate_per_tree", "min_split_improvement", "histogram_type", "categorical_encoding",
                    "calibrate_model", "calibration_frame", "distribution", "custom_metric_func",
-                   "export_checkpoints_dir", "check_constant_response", "gainslift_bins", "auc_type"}
+                   "export_checkpoints_dir", "check_constant_response", "gainslift_bins", "auc_type", "uplift_column"}
 
     def __init__(self, **kwargs):
         super(H2ORandomForestEstimator, self).__init__()
@@ -1605,5 +1605,21 @@ class H2ORandomForestEstimator(H2OEstimator):
     def auc_type(self, auc_type):
         assert_is_type(auc_type, None, Enum("auto", "none", "macro_ovr", "weighted_ovr", "macro_ovo", "weighted_ovo"))
         self._parms["auc_type"] = auc_type
+
+
+    @property
+    def uplift_column(self):
+        """
+        Define column which will be use for computing uplift gain to select best split for a tree. The column has to
+        devide dataset into treatment (value 1) and control (value 0) group.
+
+        Type: ``str``.
+        """
+        return self._parms.get("uplift_column")
+
+    @uplift_column.setter
+    def uplift_column(self, uplift_column):
+        assert_is_type(uplift_column, None, str)
+        self._parms["uplift_column"] = uplift_column
 
 

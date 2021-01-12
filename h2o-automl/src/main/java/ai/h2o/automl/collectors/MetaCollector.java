@@ -3,7 +3,6 @@ package ai.h2o.automl.collectors;
 
 import hex.tree.DHistogram;
 import hex.tree.SharedTreeModel;
-import jsr166y.CountedCompleter;
 import water.H2O;
 import water.MRTask;
 import water.MemoryManager;
@@ -115,7 +114,7 @@ public class MetaCollector {
                                   double min, double max, boolean hasNAs) {
       final double minIn = Math.max(min,-Double.MAX_VALUE);   // inclusive vector min
       final double maxIn = Math.min(max, Double.MAX_VALUE);   // inclusive vector max
-      final double maxEx = DHistogram.find_maxEx(maxIn,isInt==1?1:0); // smallest exclusive max
+      final double maxEx = DHistogram.findMaxEx(maxIn,isInt==1?1:0); // smallest exclusive max
 
       SharedTreeModel.SharedTreeParameters parms = new SharedTreeParameters();
       // make(String name, final int nbins, byte isInt, double min, double maxEx, long seed, SharedTreeModel.SharedTreeParameters parms, Key globalQuantilesKey) {
@@ -153,8 +152,8 @@ public class MetaCollector {
     }
 
     void accum(Chunk C) {
-      double min = _h.find_min();
-      double max = _h.find_maxIn();
+      double min = _h.findMin();
+      double max = _h.findMaxIn();
       double[] bins = new double[_h._nbin];
       double[] sums = new double[_h._nbin];
       double[] ssqs = new double[_h._nbin];

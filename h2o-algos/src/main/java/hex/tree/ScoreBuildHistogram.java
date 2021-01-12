@@ -45,8 +45,9 @@ public class ScoreBuildHistogram extends MRTask<ScoreBuildHistogram> {
   final int _weightIdx;
   final int _workIdx;
   final int _nidIdx;
+  final int _upliftIdx;
 
-  public ScoreBuildHistogram(H2OCountedCompleter cc, int k, int ncols, int nbins, int nbins_cats, DTree tree, int leaf, DHistogram hcs[][], DistributionFamily family, int weightIdx, int workIdx, int nidIdx) {
+  public ScoreBuildHistogram(H2OCountedCompleter cc, int k, int ncols, int nbins, int nbins_cats, DTree tree, int leaf, DHistogram hcs[][], DistributionFamily family, int weightIdx, int workIdx, int nidIdx, int upliftIdx) {
     super(cc);
     _k    = k;
     _ncols= ncols;
@@ -59,8 +60,9 @@ public class ScoreBuildHistogram extends MRTask<ScoreBuildHistogram> {
     _weightIdx = weightIdx;
     _workIdx = workIdx;
     _nidIdx = nidIdx;
+    _upliftIdx = upliftIdx;
   }
-
+  
   public ScoreBuildHistogram dfork2(byte[] types, Frame fr, boolean run_local) {
     return dfork(types,fr,run_local);
   }
@@ -107,6 +109,7 @@ public class ScoreBuildHistogram extends MRTask<ScoreBuildHistogram> {
     final Chunk wrks = chks[_workIdx];
     final Chunk nids = chks[_nidIdx];
     final Chunk weight = _weightIdx>=0 ? chks[_weightIdx] : new C0DChunk(1, chks[0].len());
+    final Chunk uplift = _upliftIdx >= 0 ? chks[_upliftIdx] : null;
 
     // Pass 1: Score a prior partially-built tree model, and make new Node
     // assignments to every row.  This involves pulling out the current
@@ -127,7 +130,7 @@ public class ScoreBuildHistogram extends MRTask<ScoreBuildHistogram> {
 //    if (_subset)
 //      accum_subset(chks,wrks,weight,nnids); //for debugging - simple code
 //    else
-      accum_all   (chks,wrks,weight,nnids); //generally faster
+      accum_all   (chks,wrks,weight,nnids, uplift); //generally faster
   }
 
   @Override public void reduce( ScoreBuildHistogram sbh ) {
@@ -219,7 +222,7 @@ public class ScoreBuildHistogram extends MRTask<ScoreBuildHistogram> {
    * @param weight observation weights
    * @param nnids node ids
    */
-  private void accum_all(Chunk chks[], Chunk wrks, Chunk weight, int nnids[]) {
+  private void accum_all(Chunk chks[], Chunk wrks, Chunk weight, int nnids[], Chunk uplift) {
     // Sort the rows by NID, so we visit all the same NIDs in a row
     // Find the count of unique NIDs in this chunk
     int nh[] = new int[_hcs.length+1];
@@ -245,8 +248,13 @@ public class ScoreBuildHistogram extends MRTask<ScoreBuildHistogram> {
     double[] ws = new double[chks[0]._len];
     double[] cs = new double[chks[0]._len];
     double[] ys = new double[chks[0]._len];
+    double[] up = null;
     weight.getDoubles(ws,0,ws.length);
     wrks.getDoubles(ys,0,ys.length);
+    if(uplift != null){
+      up = new double[chks[0]._len];
+      uplift.getDoubles(up, 0, ys.length);
+    }
     for (int c = 0; c < cols; c++) {
       boolean extracted = false;
       for (int n = 0; n < hcslen; n++) {
@@ -259,7 +267,7 @@ public class ScoreBuildHistogram extends MRTask<ScoreBuildHistogram> {
           DHistogram h = hcs[n][c];
           if( h==null ) continue; // Ignore untracked columns in this split
           lh.resizeIfNeeded(h._nbin);
-          h.updateSharedHistosAndReset(lh, ws, cs, ys, rows, nh[n], n == 0 ? 0 : nh[n - 1]);
+          h.updateSharedHistosAndReset(lh, ws, cs, ys, rows, nh[n], n == 0 ? 0 : nh[n - 1], up);
         }
       }
     }
