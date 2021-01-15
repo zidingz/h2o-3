@@ -171,8 +171,7 @@ public final class DHistogram extends Iced {
 
   public DHistogram(String name, final int nbins, int nbinsCats, byte isInt, double min, double maxEx, boolean initNA,
                     double minSplitImprovement, SharedTreeModel.SharedTreeParameters.HistogramType histogramType, long seed, Key globalQuantilesKey,
-                    Constraints cs, boolean useUplift, SharedTreeModel.SharedTreeParameters.UpliftMetricType upliftMetricType
-      ) {
+                    Constraints cs, boolean useUplift, SharedTreeModel.SharedTreeParameters.UpliftMetricType upliftMetricType) {
     assert nbins >= 1;
     assert nbinsCats >= 1;
     assert maxEx > min : "Caller ensures "+maxEx+">"+min+", since if max==min== the column "+name+" is all constants";
@@ -328,15 +327,15 @@ public final class DHistogram extends Iced {
     AtomicUtils.DoubleArray.add(_vals, _vals_dim*i+0, wDelta);
   }
 
-  public void addNasAtomic(double y, double wy, double wyy, double upliftGroup) {
+  public void addNasAtomic(double y, double wy, double wyy, double upliftGroup, double resp) {
     AtomicUtils.DoubleArray.add(_vals,_vals_dim*_nbin+0,y);
     AtomicUtils.DoubleArray.add(_vals,_vals_dim*_nbin+1,wy);
     AtomicUtils.DoubleArray.add(_vals,_vals_dim*_nbin+2,wyy);
     if(_useUplift){
-      AtomicUtils.DoubleArray.add(_valsUplift,_valsDimUplift *_nbin, upliftGroup * wy);
-      AtomicUtils.DoubleArray.add(_valsUplift,_valsDimUplift *_nbin + 1, upliftGroup);
-      AtomicUtils.DoubleArray.add(_valsUplift,_valsDimUplift * _nbin + 2, (1-upliftGroup) * wy);
-      AtomicUtils.DoubleArray.add(_valsUplift,_valsDimUplift * _nbin + 3, (1-upliftGroup));
+      AtomicUtils.DoubleArray.add(_valsUplift,_valsDimUplift *_nbin, upliftGroup);
+      AtomicUtils.DoubleArray.add(_valsUplift,_valsDimUplift *_nbin + 1, resp);
+      AtomicUtils.DoubleArray.add(_valsUplift,_valsDimUplift * _nbin + 2, (1-upliftGroup));
+      AtomicUtils.DoubleArray.add(_valsUplift,_valsDimUplift * _nbin + 3, (1-resp));
     }
   }
 
@@ -362,15 +361,14 @@ public final class DHistogram extends Iced {
   
   public double nomNA() { return _vals[_vals_dim*_nbin+6]; }
 
-  public double denTreatmentNA() { return _valsUplift[_valsDimUplift*_nbin]; }
+  public double numTreatmentNA() { return _valsUplift[_valsDimUplift*_nbin]; }
+  
+  public double respTreatmentNA() { return _valsUplift[_valsDimUplift*_nbin+1]; }
+  
+  public double numControlNA() { return _valsUplift[_valsDimUplift*_nbin+2]; }
 
-  public double nomTreatmentNA() { return _valsUplift[_valsDimUplift*_nbin+1]; }
-
-  public double denControlNA() { return _valsUplift[_valsDimUplift*_nbin+2]; }
-
-  public double nomControlNA() { return _valsUplift[_valsDimUplift*_nbin+3]; }
-
-
+  public double respControlNA() { return _valsUplift[_valsDimUplift*_nbin+3]; }
+  
 
   final boolean hasPreds() {
     return _vals_dim >= 5;
@@ -472,7 +470,7 @@ public final class DHistogram extends Iced {
    */
   void incr( double colData, double y, double w ) {
     if (Double.isNaN(colData)) {
-      addNasAtomic(w,w*y,w*y*y, -1);
+      addNasAtomic(w,w*y,w*y*y, -1, -1);
       return;
     }
     assert Double.isInfinite(colData) || (_min <= colData && colData < _maxEx) : "col_data "+colData+" out of range "+this;
@@ -559,7 +557,7 @@ public final class DHistogram extends Iced {
   public static DHistogram make(String name, final int nbins, byte isInt, double min, double maxEx, boolean hasNAs, 
                                 long seed, SharedTreeModel.SharedTreeParameters parms, Key globalQuantilesKey, Constraints cs) {
     return new DHistogram(name, nbins, parms._nbins_cats, isInt, min, maxEx, hasNAs, 
-            parms._min_split_improvement, parms._histogram_type, seed, globalQuantilesKey, cs);
+            parms._min_split_improvement, parms._histogram_type, seed, globalQuantilesKey, cs, parms._uplift_column != null, parms._uplift_metric);
   }
 
   /**
@@ -656,11 +654,12 @@ public final class DHistogram extends Iced {
         }
       }
       if(_useUplift) {
-        _valsUplift[binDimStart]     += uplift[k] * wy;          // treatment nominator
-        _valsUplift[binDimStart + 1] += uplift[k];              // treatment denominator
-        _valsUplift[binDimStart + 2] += (1 - uplift[k]) * wy;    // control nominator
-        _valsUplift[binDimStart + 3] += (1 - uplift[k]);        // control denominator
-      }
+        // Note: Only for binomial, response should be (0, 1)
+        _valsUplift[binDimStart] += uplift[k];              // treatment number
+        _valsUplift[binDimStart + 1] += resp[k];            // treatment response == 1 
+        _valsUplift[binDimStart + 2] += (1 - uplift[k]);    // control number
+        _valsUplift[binDimStart + 3] += (1 - resp[k]);      // control response == 1
+      } 
     }
   }
 
@@ -676,7 +675,7 @@ public final class DHistogram extends Iced {
     }
   }
 
-  public void updateSharedHistosAndReset(ScoreBuildHistogram.LocalHisto lh, double[] ws, double[] cs, double[] ys, int [] rows, int hi, int lo, double[] uplift) {
+  public void updateSharedHistosAndReset(ScoreBuildHistogram.LocalHisto lh, double[] ws, double[] cs, double[] ys, int [] rows, int hi, int lo, double[] uplift, double[] resp) {
     double minmax[] = new double[]{_min2,_maxIn};
     // Gather all the data for this set of rows, for 1 column and 1 split/NID
     // Gather min/max, wY and sum-squares.
@@ -692,9 +691,10 @@ public final class DHistogram extends Iced {
       double wy = weight * y;
       double wyy = wy * y;
       double upliftGroup = uplift != null ? uplift[k] : -1;
+      double rs = resp != null ? resp[k] : -1;
       if (Double.isNaN(col_data)) {
         //separate bucket for NA - atomically added to the shared histo
-        addNasAtomic(weight,wy,wyy, upliftGroup);
+        addNasAtomic(weight,wy,wyy, upliftGroup, rs);
       } else {
         // increment local per-thread histograms
         int b = bin(col_data);

@@ -267,7 +267,7 @@ public class ScoreBuildHistogram extends MRTask<ScoreBuildHistogram> {
           DHistogram h = hcs[n][c];
           if( h==null ) continue; // Ignore untracked columns in this split
           lh.resizeIfNeeded(h._nbin);
-          h.updateSharedHistosAndReset(lh, ws, cs, ys, rows, nh[n], n == 0 ? 0 : nh[n - 1], up);
+          h.updateSharedHistosAndReset(lh, ws, cs, ys, rows, nh[n], n == 0 ? 0 : nh[n - 1], up, null);
         }
       }
     }
