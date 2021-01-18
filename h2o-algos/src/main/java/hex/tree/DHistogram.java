@@ -333,9 +333,9 @@ public final class DHistogram extends Iced {
     AtomicUtils.DoubleArray.add(_vals,_vals_dim*_nbin+2,wyy);
     if(_useUplift){
       AtomicUtils.DoubleArray.add(_valsUplift,_valsDimUplift *_nbin, upliftGroup);
-      AtomicUtils.DoubleArray.add(_valsUplift,_valsDimUplift *_nbin + 1, resp);
+      AtomicUtils.DoubleArray.add(_valsUplift,_valsDimUplift *_nbin + 1, upliftGroup * resp);
       AtomicUtils.DoubleArray.add(_valsUplift,_valsDimUplift * _nbin + 2, (1-upliftGroup));
-      AtomicUtils.DoubleArray.add(_valsUplift,_valsDimUplift * _nbin + 3, (1-resp));
+      AtomicUtils.DoubleArray.add(_valsUplift,_valsDimUplift * _nbin + 3, (1-upliftGroup) * resp);
     }
   }
 
@@ -655,10 +655,13 @@ public final class DHistogram extends Iced {
       }
       if(_useUplift) {
         // Note: Only for binomial, response should be (0, 1)
-        _valsUplift[binDimStart] += uplift[k];              // treatment number
-        _valsUplift[binDimStart + 1] += resp[k];            // treatment response == 1 
-        _valsUplift[binDimStart + 2] += (1 - uplift[k]);    // control number
-        _valsUplift[binDimStart + 3] += (1 - resp[k]);      // control response == 1
+        double u = uplift[k];
+        double rs = resp[k];
+        int binDimStartUplift = _valsDimUplift * b;
+        _valsUplift[binDimStartUplift] += u;                 // treatment number
+        _valsUplift[binDimStartUplift + 1] += u * rs;        // treatment number with response == 1 
+        _valsUplift[binDimStartUplift + 2] += (1 - u);       // control number
+        _valsUplift[binDimStartUplift + 3] += (1 - u) * rs;  // control number with response == 1
       } 
     }
   }

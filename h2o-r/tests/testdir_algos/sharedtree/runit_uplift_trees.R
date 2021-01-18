@@ -23,9 +23,11 @@ test.uplift <- function() {
         data = train,
         split_method = "KL",
         mtry = 6,
-        ntree = 50,
-        interaction.depth = 20,
-        minsplit = 20,
+        ntree = 10,
+        #interaction.depth = 10,
+        minsplit = 10,
+        min_bucket_ct0 = 10,
+        min_bucket_ct1 = 10,
         verbose = TRUE)
     
     print("Uplift model summary")
@@ -35,15 +37,12 @@ test.uplift <- function() {
     print("Uplift predict on test data")
     test <- sim_pte(n = 200, p = 20, rho = 0, sigma =  sqrt(2), beta.den = 4)
     test$treat <- ifelse(test$treat == 1, 1, 0)
-
     predUplift <- predict(modelUplift, test)
-    
-    print("Uplift prediction head")
     print(head(predUplift))
 
-    print("Uplift performance")
-    perf <- performance(predUplift[, 1], predUplift[, 2], test$y, test$treat, direction = 1)
-    print(perf)
+    #print("Uplift performance")
+    #perf <- performance(predUplift[, 1], predUplift[, 2], test$y, test$treat, direction = 1)
+    #print(perf)
     #plot(perf[, 8] ~ perf[, 1], type ="l", xlab = "Decile", ylab = "uplift")
 
     # fit h2o RF
@@ -52,9 +51,11 @@ test.uplift <- function() {
         training_frame = trainH2o,
         uplift_column = "treat",
         uplift_metric = "KL",
-        ntrees = 50,
-        max_depth = 20,
-        min_rows = 20)
+        ntrees = 10,
+        max_depth = 10,
+        min_rows = 10,
+        nbins = 100,
+        seed = 42)
 
     # predict upliftRF on new data
     testH2o <- as.h2o(test)
