@@ -23,7 +23,7 @@ test.uplift <- function() {
         data = train,
         split_method = "KL",
         mtry = 6,
-        ntree = 10,
+        ntree = 1000,
         #interaction.depth = 10,
         minsplit = 10,
         min_bucket_ct0 = 10,
@@ -46,21 +46,25 @@ test.uplift <- function() {
     #plot(perf[, 8] ~ perf[, 1], type ="l", xlab = "Decile", ylab = "uplift")
 
     # fit h2o RF
+    train$treat <- as.factor(train$treat)
+    train$y <- as.factor(train$y)
     trainH2o <- as.h2o(train)
     modelH2o <- h2o.randomForest(x = c("X1", "X2", "X3", "X4", "X5", "X6"), y = "y",
         training_frame = trainH2o,
         uplift_column = "treat",
         uplift_metric = "KL",
-        ntrees = 10,
+        distribution = "bernoulli",
+        ntrees = 1000,
         max_depth = 10,
         min_rows = 10,
         nbins = 100,
         seed = 42)
 
-    # predict upliftRF on new data
-    testH2o <- as.h2o(test)
-    predH2o <- predict(modelH2o, testH2o)
-    print(head(predH2o))
+    # predict upliftRF on new data for treatment group
+    testH2oTreat <- as.h2o(test)
+    predH2oTreat <- predict(modelH2o, testH2oTreat)
+    print(head(predH2oTreat))
+    
 }
 
 doTest("Random Forest Test: Test H2O RF uplift against uplift.upliftRF", test.uplift)

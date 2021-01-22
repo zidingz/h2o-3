@@ -77,6 +77,9 @@ public abstract class SharedTree<
   protected transient Frame _validPredsCache;
 
   public boolean isSupervised(){return true;}
+  
+  public boolean _isUplift;
+  public boolean isUplift(){return _isUplift;}
 
   @Override public boolean haveMojo() { return true; }
   @Override public boolean havePojo() { 
@@ -166,6 +169,8 @@ public abstract class SharedTree<
     PlattScalingHelper.initCalibration(this, _parms, expensive);
 
     _orig_projection_array = LinearAlgebraUtils.toEigenProjectionArray(_origTrain, _train, expensive);
+    // TODO validate uplift input
+    _isUplift = _parms._uplift_column != null;
   }
 
   @Override
@@ -682,6 +687,7 @@ public abstract class SharedTree<
     double sum = score1(chks, weight, offset, fs, row);
     if( isClassifier()) {
       if( !Double.isInfinite(sum) && sum>0f && sum!=1f) ArrayUtils.div(fs, sum);
+      // TODO uplfit probability distribution corection?
       if (_parms._balance_classes)
         GenModel.correctProbabilities(fs, _model._output._priorClassDist, _model._output._modelClassDist);
     }
