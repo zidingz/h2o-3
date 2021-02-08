@@ -36,6 +36,7 @@ public class ExtendedIsolationForestTest extends TestUtil {
             p._seed = 0xDECAF;
             p._ntrees = 100;
             p._extension_level = train.numCols() - 1;
+            p._ignore_const_cols = true;
 
             ExtendedIsolationForest eif = new ExtendedIsolationForest(p);
             ExtendedIsolationForestModel model = eif.trainModel().get();
@@ -93,18 +94,18 @@ public class ExtendedIsolationForestTest extends TestUtil {
     }
 
     @Test
-    @Ignore("Expensive")
+//    @Ignore("Expensive")
     public void testBasicBigData() {
         try {
             Scope.enter();
-            Frame train = Scope.track(generate_real_only(128, 100_000, 0, 0xCAFFE));
+            Frame train = Scope.track(generate_real_only(30, 500_000, 0, 0xCAFFE));
 
             ExtendedIsolationForestModel.ExtendedIsolationForestParameters p =
                     new ExtendedIsolationForestModel.ExtendedIsolationForestParameters();
             p._train = train._key;
             p._seed = 0xDECAF;
-            p._ntrees = 100;
-            p._sample_size = 20_000;
+            p._ntrees = 10000;
+            p._sample_size = 256;
             p._extension_level = train.numCols() - 1;
 
             ExtendedIsolationForest eif = new ExtendedIsolationForest(p);
@@ -112,10 +113,10 @@ public class ExtendedIsolationForestTest extends TestUtil {
             Scope.track_generic(model);
             assertNotNull(model);
 
-            Frame out = model.score(train);
-            Scope.track_generic(out);
-            assertArrayEquals(new String[]{"anomaly_score", "mean_length"}, out.names());
-            assertEquals(train.numRows(), out.numRows());
+//            Frame out = model.score(train);
+//            Scope.track_generic(out);
+//            assertArrayEquals(new String[]{"anomaly_score", "mean_length"}, out.names());
+//            assertEquals(train.numRows(), out.numRows());
         } finally {
             Scope.exit();
         }

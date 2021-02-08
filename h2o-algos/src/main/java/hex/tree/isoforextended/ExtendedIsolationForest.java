@@ -2,6 +2,7 @@ package hex.tree.isoforextended;
 
 import hex.ModelBuilder;
 import hex.ModelCategory;
+import hex.tree.SharedTree;
 import org.apache.log4j.Logger;
 import water.H2O;
 import water.Job;
@@ -11,6 +12,7 @@ import water.fvec.Frame;
 import water.util.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -50,7 +52,27 @@ public class ExtendedIsolationForest extends ModelBuilder<ExtendedIsolationFores
     
     @Override
     protected void checkMemoryFootPrint_impl() {
-        // TODO valenad implement memory check
+        long memoryEstimation = Double.BYTES * _parms._ntrees * _parms.train().numRows() * _parms._sample_size /* + _parms._ntrees * sizeOfTree */;
+        memoryEstimation = (32 + (32 + Double.BYTES * _parms.train().numRows()) * _parms._sample_size);
+        System.out.println("memoryEstimation = " + PrettyPrint.bytes(memoryEstimation));
+        
+//        int trees_so_far = _model._output._ntrees; //existing trees
+//        long model_mem_size = new SharedTree.ComputeModelSize(trees_so_far, _model._output._treeKeys).doAllNodes()._model_mem_size;
+//
+//        _model._output._treeStats._byte_size = model_mem_size;
+//        double avg_tree_mem_size = (double)model_mem_size / trees_so_far;
+//        Log.debug("Average tree size (for all classes): " + PrettyPrint.bytes((long)avg_tree_mem_size));
+//
+//        // all the compressed trees are stored on the driver node
+//        long max_mem = H2O.SELF._heartbeat.get_free_mem();
+//        if (_parms._ntrees * avg_tree_mem_size > max_mem) {
+//            String msg = "The tree model will not fit in the driver node's memory ("
+//                    + PrettyPrint.bytes((long)avg_tree_mem_size)
+//                    + " per tree x " + _parms._ntrees + " > "
+//                    + PrettyPrint.bytes(max_mem)
+//                    + ") - try decreasing ntrees and/or max_depth or increasing min_rows!";
+//            error("_ntrees", msg);
+//        }
     }
 
     @Override
@@ -67,11 +89,11 @@ public class ExtendedIsolationForest extends ModelBuilder<ExtendedIsolationFores
                 error("sample_size","Parameter sample_size must be in interval [0, "
                         + sampleSizeMax + "] but it is " + _parms._sample_size);
             }
-            if( _parms._ntrees < 0 || _parms._ntrees > MAX_NTREES)
+            if(_parms._ntrees < 0 || _parms._ntrees > MAX_NTREES)
                 error("ntrees", "Parameter ntrees must be in interval [1, "
                         + MAX_NTREES + "] but it is " + _parms._ntrees);
         }
-        checkMemoryFootPrint();
+        if (expensive && error_count() == 0) checkMemoryFootPrint();
     }
 
     @Override
@@ -112,6 +134,7 @@ public class ExtendedIsolationForest extends ModelBuilder<ExtendedIsolationFores
         }
 
         private void buildIsolationTreeEnsemble() {
+            System.out.println("train().names() = " + Arrays.toString(train().names()));
             _rand = RandomUtils.getRNG(_parms._seed);
             ExtendedIsolationForestModel model = new ExtendedIsolationForestModel(dest(), _parms,
                     new ExtendedIsolationForestModel.ExtendedIsolationForestOutput(ExtendedIsolationForest.this));

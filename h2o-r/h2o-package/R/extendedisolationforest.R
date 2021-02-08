@@ -9,10 +9,8 @@
 #' @param x A vector containing the \code{character} names of the predictors in the model.
 #' @param model_id Destination id for this model; auto-generated if not specified.
 #' @param ignore_const_cols \code{Logical}. Ignore constant columns. Defaults to TRUE.
-#' @param max_runtime_secs Maximum allowed runtime in seconds for model training. Use 0 to disable. Defaults to 0.
 #' @param categorical_encoding Encoding scheme for categorical features Must be one of: "AUTO", "Enum", "OneHotInternal", "OneHotExplicit",
 #'        "Binary", "Eigen", "LabelEncoder", "SortByResponse", "EnumLimited". Defaults to AUTO.
-#' @param export_checkpoints_dir Automatically export generated models to this directory.
 #' @param ntrees Number of Extended Isolation Forest trees. Defaults to 100.
 #' @param sample_size Number of randomly sampled observations used to train each Extended Isolation Forest tree. Defaults to 256.
 #' @param extension_level Maximum is N - 1 (N = numCols). Minimum is 0. Extended Isolation Forest with extension_Level = 0 behaves like
@@ -24,9 +22,7 @@ h2o.extendedIsolationForest <- function(training_frame,
                                         x,
                                         model_id = NULL,
                                         ignore_const_cols = TRUE,
-                                        max_runtime_secs = 0,
                                         categorical_encoding = c("AUTO", "Enum", "OneHotInternal", "OneHotExplicit", "Binary", "Eigen", "LabelEncoder", "SortByResponse", "EnumLimited"),
-                                        export_checkpoints_dir = NULL,
                                         ntrees = 100,
                                         sample_size = 256,
                                         extension_level = 0,
@@ -45,12 +41,8 @@ h2o.extendedIsolationForest <- function(training_frame,
     parms$model_id <- model_id
   if (!missing(ignore_const_cols))
     parms$ignore_const_cols <- ignore_const_cols
-  if (!missing(max_runtime_secs))
-    parms$max_runtime_secs <- max_runtime_secs
   if (!missing(categorical_encoding))
     parms$categorical_encoding <- categorical_encoding
-  if (!missing(export_checkpoints_dir))
-    parms$export_checkpoints_dir <- export_checkpoints_dir
   if (!missing(ntrees))
     parms$ntrees <- ntrees
   if (!missing(sample_size))
@@ -67,9 +59,7 @@ h2o.extendedIsolationForest <- function(training_frame,
 .h2o.train_segments_extendedIsolationForest <- function(training_frame,
                                                         x,
                                                         ignore_const_cols = TRUE,
-                                                        max_runtime_secs = 0,
                                                         categorical_encoding = c("AUTO", "Enum", "OneHotInternal", "OneHotExplicit", "Binary", "Eigen", "LabelEncoder", "SortByResponse", "EnumLimited"),
-                                                        export_checkpoints_dir = NULL,
                                                         ntrees = 100,
                                                         sample_size = 256,
                                                         extension_level = 0,
@@ -93,12 +83,8 @@ h2o.extendedIsolationForest <- function(training_frame,
 
   if (!missing(ignore_const_cols))
     parms$ignore_const_cols <- ignore_const_cols
-  if (!missing(max_runtime_secs))
-    parms$max_runtime_secs <- max_runtime_secs
   if (!missing(categorical_encoding))
     parms$categorical_encoding <- categorical_encoding
-  if (!missing(export_checkpoints_dir))
-    parms$export_checkpoints_dir <- export_checkpoints_dir
   if (!missing(ntrees))
     parms$ntrees <- ntrees
   if (!missing(sample_size))
