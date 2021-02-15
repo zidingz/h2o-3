@@ -36,7 +36,7 @@ class H2OGradientBoostingEstimator(H2OEstimator):
                    "histogram_type", "max_abs_leafnode_pred", "pred_noise_bandwidth", "categorical_encoding",
                    "calibrate_model", "calibration_frame", "custom_metric_func", "custom_distribution_func",
                    "export_checkpoints_dir", "monotone_constraints", "check_constant_response", "gainslift_bins",
-                   "auc_type", "uplift_column", "uplift_metric"}
+                   "auc_type"}
 
     def __init__(self, **kwargs):
         super(H2OGradientBoostingEstimator, self).__init__()
@@ -1876,36 +1876,5 @@ class H2OGradientBoostingEstimator(H2OEstimator):
     def auc_type(self, auc_type):
         assert_is_type(auc_type, None, Enum("auto", "none", "macro_ovr", "weighted_ovr", "macro_ovo", "weighted_ovo"))
         self._parms["auc_type"] = auc_type
-
-
-    @property
-    def uplift_column(self):
-        """
-        Define column which will be use for computing uplift gain to select best split for a tree. The column has to
-        devide dataset into treatment (value 1) and control (value 0) group.
-
-        Type: ``str``.
-        """
-        return self._parms.get("uplift_column")
-
-    @uplift_column.setter
-    def uplift_column(self, uplift_column):
-        assert_is_type(uplift_column, None, str)
-        self._parms["uplift_column"] = uplift_column
-
-
-    @property
-    def uplift_metric(self):
-        """
-        Divergence metric used to find best split when building an upplift tree.
-
-        One of: ``"auto"``, ``"kl"``, ``"euclidean"``, ``"chi_squared"``.
-        """
-        return self._parms.get("uplift_metric")
-
-    @uplift_metric.setter
-    def uplift_metric(self, uplift_metric):
-        assert_is_type(uplift_metric, None, Enum("auto", "kl", "euclidean", "chi_squared"))
-        self._parms["uplift_metric"] = uplift_metric
 
 

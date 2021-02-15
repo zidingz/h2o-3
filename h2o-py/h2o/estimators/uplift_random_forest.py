@@ -29,7 +29,7 @@ class H2OUpliftRandomForestEstimator(H2OEstimator):
                    "binomial_double_trees", "checkpoint", "col_sample_rate_change_per_level",
                    "col_sample_rate_per_tree", "histogram_type", "categorical_encoding", "calibrate_model",
                    "calibration_frame", "distribution", "custom_metric_func", "export_checkpoints_dir",
-                   "check_constant_response", "gainslift_bins", "uplift_column", "uplift_metric"}
+                   "check_constant_response", "gainslift_bins"}
 
     def __init__(self, **kwargs):
         super(H2OUpliftRandomForestEstimator, self).__init__()
@@ -750,36 +750,5 @@ class H2OUpliftRandomForestEstimator(H2OEstimator):
     def gainslift_bins(self, gainslift_bins):
         assert_is_type(gainslift_bins, None, int)
         self._parms["gainslift_bins"] = gainslift_bins
-
-
-    @property
-    def uplift_column(self):
-        """
-        Define column which will be use for computing uplift gain to select best split for a tree. The column has to
-        devide dataset into treatment (value 1) and control (value 0) group.
-
-        Type: ``str``.
-        """
-        return self._parms.get("uplift_column")
-
-    @uplift_column.setter
-    def uplift_column(self, uplift_column):
-        assert_is_type(uplift_column, None, str)
-        self._parms["uplift_column"] = uplift_column
-
-
-    @property
-    def uplift_metric(self):
-        """
-        Divergence metric used to find best split when building an upplift tree.
-
-        One of: ``"auto"``, ``"kl"``, ``"euclidean"``, ``"chi_squared"``.
-        """
-        return self._parms.get("uplift_metric")
-
-    @uplift_metric.setter
-    def uplift_metric(self, uplift_metric):
-        assert_is_type(uplift_metric, None, Enum("auto", "kl", "euclidean", "chi_squared"))
-        self._parms["uplift_metric"] = uplift_metric
 
 

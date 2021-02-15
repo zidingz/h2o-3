@@ -21,6 +21,9 @@ import static hex.genmodel.GenModel.getPrediction;
 
 public class UpliftDRF extends DRF {
 
+    public enum UpliftMetricType { AUTO, KL, ChiSquared, Euclidean }
+    public UpliftMetricType _uplift_metric;
+
     // Called from an http request
     public UpliftDRF(hex.tree.drf.DRFModel.DRFParameters parms) {
         super(parms);
