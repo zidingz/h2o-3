@@ -1,5 +1,5 @@
 #############################################
-## H2O Random Forest vs. uplift.upliftRF test
+## H2O Uplift Random Forest vs. uplift.upliftRF test
 #############################################
 
 setwd(normalizePath(dirname(R.utils::commandArgs(asValues=TRUE)$"f")))
