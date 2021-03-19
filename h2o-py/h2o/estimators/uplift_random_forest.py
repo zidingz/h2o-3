@@ -29,7 +29,7 @@ class H2OUpliftRandomForestEstimator(H2OEstimator):
                    "binomial_double_trees", "checkpoint", "col_sample_rate_change_per_level",
                    "col_sample_rate_per_tree", "histogram_type", "categorical_encoding", "calibrate_model",
                    "calibration_frame", "distribution", "custom_metric_func", "export_checkpoints_dir",
-                   "check_constant_response", "gainslift_bins", "uplift_column", "uplift_metric"}
+                   "check_constant_response", "gainslift_bins", "uplift_column", "uplift_metric", "auuc_type"}
 
     def __init__(self, **kwargs):
         super(H2OUpliftRandomForestEstimator, self).__init__()
@@ -781,5 +781,20 @@ class H2OUpliftRandomForestEstimator(H2OEstimator):
     def uplift_metric(self, uplift_metric):
         assert_is_type(uplift_metric, None, Enum("auto", "kl", "euclidean", "chi_squared"))
         self._parms["uplift_metric"] = uplift_metric
+
+
+    @property
+    def auuc_type(self):
+        """
+        AUUC metric used to calculate Area under Uplift.
+
+        One of: ``"auto"``, ``"qini"``, ``"lift"``, ``"gain"``.
+        """
+        return self._parms.get("auuc_type")
+
+    @auuc_type.setter
+    def auuc_type(self, auuc_type):
+        assert_is_type(auuc_type, None, Enum("auto", "qini", "lift", "gain"))
+        self._parms["auuc_type"] = auuc_type
 
 
