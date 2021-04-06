@@ -120,6 +120,50 @@ setMethod("h2o.keyof", signature(object = "Keyed"), function(object) {
   stop("`keyof` not implemented for this object type.")
 })
 
+#' H2OInfogramModel class
+#'
+#' H2OInfogramModel class contains a subset of what a normal H2OModel will return
+#' @slot model_id string returned as part of every H2OModel
+#' @slot algorithm string denoting the algorithm used to build infogram
+#' @slot admissible_features string array denoting all predictor names which pass the cmi and relelvance threshold
+#' @slot admissible_score is H2OFrame that contains columns, admissible, admissible_index, relevance, cmi, cmi_raw
+#' @export
+setClass("H2OInfogramModel", slots = list(model_id='character', algorithm='character', admissible_features='character',
+                                          admissible_score = "H2OFrame", admissible_score_valid = "H2OFrame", 
+                                          admissible_score_cv = "H2OFrame"))
+
+#' @rdname initialize
+#' @param .object A \code{H2OInfogramModel} object
+#' @param model_id string returned as part of every H2OModel
+#' @param ... parameters to algorithm, admissible_features, ... 
+#' @return A \code{H2OInfogramModel} object
+#' @export
+setMethod("initialize", "H2OInfogramModel", function(.Object, model_id, ...) {
+  if (!missing(model_id)) {
+    infogram_model = h2o.getModel(model_id)
+    if (is(infogram_model, "H2OModel") &&
+        (infogram_model@algorithm == 'infogram')) {
+      .Object@model_id <- infogram_model@model_id
+      .Object@algorithm <- infogram_model@algorithm
+      .Object@admissible_features <-
+        infogram_model@model$admissible_features
+      .Object@admissible_score <- h2o.getFrame(infogram_model@model$relevance_cmi_key)
+      return(.Object)
+    } else {
+      stop("Input must be H2OModel with algorithm == infogram.")
+    }
+  } else {
+    stop("A model Id must be used to instantiate a H2OInfogramModel.")
+  }
+})
+
+#' wrapper function for instantiating H2OInfogramModel
+#'
+#' @param model_id is string of H2OModel object
+H2OInfogramModel <- function(model_id, ...) {
+  initialize(new("H2OInfogramModel"), model_id=model_id, ...)
+}
+
 #'
 #' The H2OModel object.
 #'
@@ -256,7 +300,7 @@ setMethod("summary", "H2OModel", function(object, ...) {
   if( !is.null(tm$Gini)                                            )  cat("\nGini: (Extract with `h2o.gini`)", tm$Gini)
   if( !is.null(tm$null_deviance)                                   )  cat("\nNull Deviance: (Extract with `h2o.nulldeviance`)", tm$null_deviance)
   if( !is.null(tm$residual_deviance)                               )  cat("\nResidual Deviance: (Extract with `h2o.residual_deviance`)", tm$residual_deviance)
-  if(!is.null(o@algorithm) && o@algorithm %in% c("gam","glm","gbm","drf","xgboost","generic")) {
+  if(!is.null(o@algorithm) && o@algorithm %in% c("gam","glm","gbm","drf","xgboost","infogram","generic")) {
     if( !is.null(tm$r2) && !is.na(tm$r2)                           )  cat("\nR^2: (Extract with `h2o.r2`)", tm$r2)
   }
   if( !is.null(tm$AIC)                                             )  cat("\nAIC: (Extract with `h2o.aic`)", tm$AIC)
@@ -610,7 +654,7 @@ setMethod("show", "H2OBinomialMetrics", function(object) {
     cat("AUC:  ", object@metrics$AUC, "\n", sep="")
     cat("AUCPR:  ", object@metrics$pr_auc, "\n", sep="")
     cat("Gini:  ", object@metrics$Gini, "\n", sep="")
-    if(!is.null(object@algorithm) && object@algorithm %in% c("gam","glm","gbm","drf","xgboost","generic")) {
+    if(!is.null(object@algorithm) && object@algorithm %in% c("gam","glm","gbm","drf","xgboost","infogram","generic")) {
 
       if (!is.null(object@metrics$r2) && !is.na(object@metrics$r2)) cat("R^2:  ", object@metrics$r2, "\n", sep="")
       if (!is.null(object@metrics$null_deviance0)) cat("Null Deviance:  ", object@metrics$null_deviance,"\n", sep="")
