@@ -129,7 +129,9 @@ setMethod("h2o.keyof", signature(object = "Keyed"), function(object) {
 #' @slot admissible_score is H2OFrame that contains columns, admissible, admissible_index, relevance, cmi, cmi_raw
 #' @aliases H2OInfogram
 #' @export
-setClass("H2OInfogram", slots = list(model_id='character', algorithm='character', admissible_features='character', admissible_score="H2OFrame"))
+setClass("H2OInfogramModel", slots = list(model_id='character', algorithm='character', admissible_features='character',
+                                          admissible_score = "H2OFrame", admissible_score_valid = "H2OFrame", 
+                                          admissible_score_cv = "H2OFrame"))
 
 #' @rdname initialize
 #' @param .object A \code{H2OInfogramModel} object
