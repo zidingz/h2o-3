@@ -258,6 +258,7 @@ def algo_to_modelname(algo):
     if algo == "aggregator": return "H2O Aggregator Model"
     if algo == "deeplearning": return "Deep Learning - Neural Network"
     if algo == "xgboost": return "XGBoost"
+    if algo == "infogram": return "H2O InfoGram"
     if algo == "drf": return "Random Forest Model in H2O"
     if algo == "gbm": return "Gradient Boosting Machine"
     if algo == "glm": return "H2O Generalized Linear Models"
@@ -271,6 +272,7 @@ def algo_to_modelname(algo):
     if algo == "gam": return "Generalized Additive Model"
     if algo == "targetencoder": return "Target Encoder"
     if algo == "gam": return "General Additive Model"
+    if algo == "infogram": return "InfoGram Estimator"
     return algo
 
 
