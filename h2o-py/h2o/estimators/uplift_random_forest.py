@@ -788,7 +788,7 @@ class H2OUpliftRandomForestEstimator(H2OEstimator):
         """
         AUUC metric used to calculate Area under Uplift.
 
-        One of: ``"auto"``, ``"qini"``, ``"lift"``, ``"gain"``.
+        One of: ``"auto"``, ``"qini"``, ``"lift"``, ``"gain"``  (default: ``"auto"``).
         """
         return self._parms.get("auuc_type")
 
