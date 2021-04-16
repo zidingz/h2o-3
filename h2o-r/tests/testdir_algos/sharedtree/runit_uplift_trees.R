@@ -14,7 +14,7 @@ test.uplift <- function() {
     train <- sim_pte(n = 1000, p = 6, rho = 0, sigma = sqrt(2), beta.den = 4)
     train$treat <- ifelse(train$treat == 1, 1, 0)
     
-    ntrees <- 100
+    ntrees <- 10
     
     print("Train data summary")
     print(summary(train))
@@ -42,27 +42,33 @@ test.uplift <- function() {
     predUplift <- predict(modelUplift, train)
     
     # fit h2o RF
+    print("Train h2o uplift model")
     trainH2o <- train
     trainH2o$treat <- as.factor(train$treat)
     trainH2o$y <- as.factor(train$y)
     trainH2o <- as.h2o(trainH2o)
     
-    modelH2o <- h2o.upliftRandomForest(x = c("X1", "X2", "X3", "X4", "X5", "X6"), y = "y",
-    training_frame = trainH2o,
-    uplift_column = "treat",
-    uplift_metric = "KL",
-    distribution = "bernoulli",
-    gainslift_bins = 10,
-    ntrees = ntrees,
-    max_depth = 10,
-    min_rows = 10,
-    nbins = 100,
-    seed = 42)
-
+    modelH2o <- h2o.upliftRandomForest(
+        x = c("X1", "X2", "X3", "X4", "X5", "X6"), y = "y",
+        training_frame = trainH2o,
+        uplift_column = "treat",
+        uplift_metric = "KL",
+        auuc_type = "qini",
+        distribution = "bernoulli",
+        gainslift_bins = 10,
+        ntrees = ntrees,
+        max_depth = 10,
+        min_rows = 10,
+        nbins = 100,
+        seed = 42)
+    
     print(h2o.varimp(modelH2o))
+    print(modelH2o)
     
     # predict upliftRF on new data for treatment group
-    testH2o <- as.h2o(train)
+    print("H2O uplift predict on test data")
+    testH2o <- as.h2o(test)
+    testH2o <- trainH2o
     predH2o <- predict(modelH2o, testH2o)
     
     #print h2o
@@ -81,18 +87,43 @@ test.uplift <- function() {
     print(res)
     print(summary(res))
 
-    print("H2O gains lift")
-    print(h2o.gainsLift(modelH2o))
+    #print("H2O gains lift")
+    #print(h2o.gainsLift(modelH2o))
     
     print("UpliftRF performance")
-    upliftPerf <- performance(res$pr.y1_ct1, res$pr.y1_ct0, train$y, train$treat, direction = 1)
+    upliftPerf <- performance(res$pr.y1_ct1, res$pr.y1_ct0, train$y, train$treat, direction=1)
+    upliftQini <- qini(upliftPerf)
     print(upliftPerf)
-    print(qini(upliftPerf))
+    print(upliftQini)
+    print(upliftQini$Qini)
     
-    print("H2O RF performance")
-    h2oPerf <- performance(res$p_y1_ct1, res$p_y1_ct0, train$y, train$treat, direction = 1)
+    
+    print("H2O Uplift RF performance")
+    h2oPerf <- performance(res$p_y1_ct1, res$p_y1_ct0, train$y, train$treat, direction=1)
+    h2oPerfQini <- qini(h2oPerf)
+    h2oPerfO <- h2o.performance(modelH2o, trainH2o)
+    h2oQini <- h2o.auuc(h2oPerfO)
+    print(h2oPerfO)
     print(h2oPerf)
-    print(qini(h2oPerf))
+    print(h2oPerfQini)
+    print(h2oQini)
+
+    print("Qini AUUC")
+    print(paste("UpliftRF: ", upliftQini$Qini))
+    print(paste("H2O Uplift perf: ", h2oPerfQini$Qini))
+    print(paste("H2O Uplift: ", h2oQini))
+    expect_true((h2oPerfQini$Qini - upliftQini$Qini) < 10e-5) 
+    
+    y1ct1 = c(0.1, -0.1, 0.2, 0.5, 0.55, 0.13, -0.2, 0.11, 0.3, 0.9)
+    y1ct0 = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    y = c(0, 0, 0, 1, 1, 0, 0, 0, 1, 1)
+    treat = c(0, 0, 0, 0, 0, 1, 1, 1, 1, 1)
+    perfSimple = performance(y1ct1, y1ct0, y, treat, direction=1)
+    print(perfSimple)
+    print(qini(perfSimple))
+    # paper Qini AUUC = Area under Qini curve - area under random curve
+    # random overall gain = sum(ntc1y1) / sum(ntc1) - sum(ntc0y1) / sum(ntc0) 
+    # random incremental gains = cumsum(rep(overall gain / groups, groups))
 }
 
 doTest("Random Forest Test: Test H2O RF uplift against uplift.upliftRF", test.uplift)
