@@ -30,7 +30,8 @@ public class RegisterAlgos extends AlgoAbstractRegister {
             new hex.generic     .Generic     (true),
             new hex.gam         .GAM         (true),
             new PSVM(true),
-            new hex.rulefit     .RuleFit     (true)
+            new hex.rulefit     .RuleFit     (true),
+            new hex.AnovaGLM    .AnovaGLM    (true)
     };
 
     // "Word2Vec", "Example", "Grep"
