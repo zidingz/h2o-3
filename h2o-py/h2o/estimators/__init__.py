@@ -8,6 +8,7 @@ import inspect
 import sys
 
 from .aggregator import H2OAggregatorEstimator
+from .anovaglm import H2OANOVAGLMEstimator
 from .coxph import H2OCoxProportionalHazardsEstimator
 from .deeplearning import H2OAutoEncoderEstimator
 from .deeplearning import H2ODeepLearningEstimator
@@ -61,5 +62,5 @@ __all__ = (
     "H2OKMeansEstimator", "H2ONaiveBayesEstimator", "H2OPrincipalComponentAnalysisEstimator",
     "H2OSupportVectorMachineEstimator", "H2ORandomForestEstimator", "H2ORuleFitEstimator",
     "H2OStackedEnsembleEstimator", "H2OSingularValueDecompositionEstimator", "H2OTargetEncoderEstimator",
-    "H2OWord2vecEstimator", "H2OXGBoostEstimator"
+    "H2OWord2vecEstimator", "H2OXGBoostEstimator", "H2OANOVAGLMEstimator"
 )
