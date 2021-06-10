@@ -14,6 +14,7 @@ import hex.genmodel.algos.pca.PCAMojoReader;
 import hex.genmodel.algos.pipeline.MojoPipelineReader;
 import hex.genmodel.algos.svm.SvmMojoReader;
 import hex.genmodel.algos.targetencoder.TargetEncoderMojoReader;
+import hex.genmodel.algos.uplift.UpliftDrfMojoReader;
 import hex.genmodel.algos.word2vec.Word2VecMojoReader;
 import hex.genmodel.algos.klime.KLimeMojoReader;
 
@@ -104,6 +105,9 @@ public class ModelMojoFactory {
       
       case "Cox Proportional Hazards":
         return new CoxPHMojoReader();
+
+      case "Uplift Distributed Random Forest":
+        return new UpliftDrfMojoReader();
         
       default:
         // Try to load MOJO reader via service
