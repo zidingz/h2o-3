@@ -153,6 +153,12 @@ Below is a simple example showing how to build an Isolation Forest model.
         # Predict the leaf node assignment
         ln_pred <- h2o.predict_leaf_node_assignment(model, test)
 
+        # Retrieve the feature frequencies:
+        h2o.feature_frequencies(model, newdata = test)
+
+        # Retrieve per-variable split information:
+        model.varsplits()
+
    .. code-tab:: python
 
         import h2o
@@ -177,6 +183,12 @@ Below is a simple example showing how to build an Isolation Forest model.
 
         # Predict the leaf node assignment
         ln_pred = model.predict_leaf_node_assignment(test, "Path")
+
+        # Retrieve the feature frequencies:
+        model.feature_frequencies(test_data=test)
+
+        # Retrieve per-variable split information:
+        model.varsplits()
 
 
 References
