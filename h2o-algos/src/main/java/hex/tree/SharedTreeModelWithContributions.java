@@ -127,7 +127,7 @@ public abstract class SharedTreeModelWithContributions<
           treeSHAPs.add(new TreeSHAP<>(nodes, nodes, 0));
         }
       }
-      assert treeSHAPs.size() == _output._ntrees; // for now only regression and binomial to keep the output sane
+      assert treeSHAPs.size() <= 2*_output._ntrees; // for now only regression and binomial to keep the output sane
       _treeSHAP = new TreeSHAPEnsemble<>(treeSHAPs, (float) _output._init_f);
     }
 
