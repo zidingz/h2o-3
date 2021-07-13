@@ -253,14 +253,15 @@ public class AnovaGLMUtils {
   }
   
   public static GLMParameters[] buildGLMParameters(Frame[] trainingFrames, AnovaGLMParameters parms) {
-    int numberOfModels = trainingFrames.length;
+    final int numberOfModels = trainingFrames.length;
     GLMParameters[] glmParams = new GLMParameters[numberOfModels];
-    final List<String> anovaGLMOnlyList = Arrays.asList("save_transformed_framekeys", "type");
+    final List<String> anovaglmOnlyList = Arrays.asList("save_transformed_framekeys", "type");
+
+    final Field[] field1 = AnovaGLMParameters.class.getDeclaredFields();
+    final Field[] field2 = Model.Parameters.class.getDeclaredFields();
     for (int index = 0; index < numberOfModels; index++) {
       glmParams[index] = new GLMParameters();
-      Field[] field1 = AnovaGLMParameters.class.getDeclaredFields();
-      setParamField(parms, glmParams[index], false, field1, anovaGLMOnlyList);
-      Field[] field2 = Model.Parameters.class.getDeclaredFields();
+      setParamField(parms, glmParams[index], false, field1, anovaglmOnlyList);
       setParamField(parms, glmParams[index], true, field2, Collections.emptyList());
       glmParams[index]._train = trainingFrames[index]._key;
       glmParams[index]._family = parms._family;

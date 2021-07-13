@@ -7,6 +7,7 @@ import hex.ModelCategory;
 import hex.glm.GLM;
 import hex.glm.GLMModel;
 import water.DKV;
+import water.H2O;
 import water.Key;
 import water.Scope;
 import water.exceptions.H2OModelBuilderIllegalArgumentException;
@@ -163,7 +164,7 @@ public class AnovaGLM extends ModelBuilder<AnovaGLMModel, AnovaGLMModel.AnovaGLM
         _glmParams = buildGLMParameters(_trainingFrames, _parms);
         _job.update(1, "calling GLM to build GLM models ...");
         _glmBuilder = buildGLMBuilders(_glmParams);
-        _glmResults = ModelBuilderHelper.trainModelsParallel(_glmBuilder, 4);  // todo: make this adaptive
+        _glmResults = ModelBuilderHelper.trainModelsParallel(_glmBuilder, 2* H2O.NUMCPUS);
         GLMModel[] glmModels = extractGLMModels(_glmResults);
         copyGLMCoeffs(model, glmModels, _modelNames);
         fillModelMetrics(model, glmModels[_numberOfPredCombo], _trainingFrames[_numberOfPredCombo]); // take full model metrics as our model metrics
