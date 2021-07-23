@@ -10,6 +10,7 @@ import water.fvec.Vec;
 import water.runner.CloudSize;
 import water.runner.H2ORunner;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -265,6 +266,87 @@ public class InfoGramPipingTest extends TestUtil {
       Scope.track_generic(infogramModel);
       List<String> predictorNames = new ArrayList<>(Arrays.asList(infogramModel._output._topKFeatures));
       assertEqualCMIRel(predictorNames, deepRel, deepCMI, infogramModel._output, TOLERANCE, new ArrayList<Integer>());
+    } finally {
+      Scope.exit();
+    }
+  }
+
+  @Test
+  public void testphpmPOD5A() {
+    try {
+      Scope.enter();
+      Frame trainF = Scope.track(parseTestFile("/Users/wendycwong/Downloads/phpmPOD5A.arff"));
+
+      //trainF.replace("target", trainF.vec("target").toCategoricalVec()).remove();
+      DKV.put(trainF);
+      InfoGramModel.InfoGramParameter params = new InfoGramModel.InfoGramParameter();
+      params._response_column = "target";
+      params._train = trainF._key;
+      params._infogram_algorithm = InfoGramModel.InfoGramParameter.Algorithm.gbm;
+      params._ntop = 50;
+      params._seed = 12345;
+
+      InfoGramModel infogramModel = new InfoGram(params).trainModel().get();
+      Scope.track_generic(infogramModel);
+      Frame infoGram = DKV.getGet(infogramModel._output._relCmiKey);
+      TestUtil.writeFrameToCSV("/Users/wendycwong/temp/phpmPOD5A_infogram.csv", infoGram, true, false);
+      Scope.track(infoGram);
+    } catch (IOException e) {
+      e.printStackTrace();
+    } finally {
+      Scope.exit();
+    }
+  }
+
+  @Test
+  public void testKDDCup09() {
+    try {
+      Scope.enter();
+      Frame trainF = Scope.track(parseTestFile("/Users/wendycwong/Downloads/KDDCup09_appetency.arff"));
+
+      //trainF.replace("target", trainF.vec("target").toCategoricalVec()).remove();
+      DKV.put(trainF);
+      InfoGramModel.InfoGramParameter params = new InfoGramModel.InfoGramParameter();
+      params._response_column = "APPETENCY";
+      params._train = trainF._key;
+      params._infogram_algorithm = InfoGramModel.InfoGramParameter.Algorithm.gbm;
+      params._ntop = 50;
+      params._seed = 12345;
+
+      InfoGramModel infogramModel = new InfoGram(params).trainModel().get();
+      Scope.track_generic(infogramModel);
+      Frame infoGram = DKV.getGet(infogramModel._output._relCmiKey);
+      TestUtil.writeFrameToCSV("/Users/wendycwong/temp/KDDCup09_infogram.csv", infoGram, true, false);
+      Scope.track(infoGram);
+    } catch (IOException e) {
+      e.printStackTrace();
+    } finally {
+      Scope.exit();
+    }
+  }
+
+  @Test
+  public void testguillermo() {
+    try {
+      Scope.enter();
+      Frame trainF = Scope.track(parseTestFile("/Users/wendycwong/Downloads/file7b5323e77330.arff"));
+
+      //trainF.replace("target", trainF.vec("target").toCategoricalVec()).remove();
+      DKV.put(trainF);
+      InfoGramModel.InfoGramParameter params = new InfoGramModel.InfoGramParameter();
+      params._response_column = "class";
+      params._train = trainF._key;
+      params._infogram_algorithm = InfoGramModel.InfoGramParameter.Algorithm.gbm;
+      params._ntop = 50;
+      params._seed = 12345;
+
+      InfoGramModel infogramModel = new InfoGram(params).trainModel().get();
+      Scope.track_generic(infogramModel);
+      Frame infoGram = DKV.getGet(infogramModel._output._relCmiKey);
+      TestUtil.writeFrameToCSV("/Users/wendycwong/temp/guillermo_infogram.csv", infoGram, true, false);
+      Scope.track(infoGram);
+    } catch (IOException e) {
+      e.printStackTrace();
     } finally {
       Scope.exit();
     }
