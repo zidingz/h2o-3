@@ -7,8 +7,8 @@ import water.api.API;
 import water.api.schemas3.KeyV3;
 import water.api.schemas3.ModelParametersSchemaV3;
 
-public class InfoGramV99 extends ModelBuilderSchema<InfoGram, InfoGramV99, InfoGramV99.INFOGRAMParametersV99> {
-  public static final class INFOGRAMParametersV99 extends ModelParametersSchemaV3<InfoGramModel.InfoGramParameter, InfoGramV99.INFOGRAMParametersV99> {
+public class InfoGramV99 extends ModelBuilderSchema<InfoGram, InfoGramV99, InfoGramV99.InfoGramParametersV99> {
+  public static final class InfoGramParametersV99 extends ModelParametersSchemaV3<InfoGramModel.InfoGramParameter, InfoGramParametersV99> {
     public static final String[] fields = new String[] {
             "model_id",
             "training_frame",

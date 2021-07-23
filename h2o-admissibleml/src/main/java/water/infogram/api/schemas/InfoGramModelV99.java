@@ -7,7 +7,7 @@ import water.api.schemas3.ModelSchemaV3;
 
 
 public class InfoGramModelV99 extends ModelSchemaV3<InfoGramModel, InfoGramModelV99, InfoGramModel.InfoGramParameter,
-        InfoGramV99.INFOGRAMParametersV99, InfoGramModel.InfoGramOutput, InfoGramModelV99.InfoGramOutputV99> {
+        InfoGramV99.InfoGramParametersV99, InfoGramModel.InfoGramOutput, InfoGramModelV99.InfoGramOutputV99> {
   public static final class InfoGramOutputV99 extends ModelOutputSchemaV3<InfoGramModel.InfoGramOutput, InfoGramOutputV99> {
     @API(help="Array of conditional mutual information for admissible features normalized to 0.0 and 1.0")
     public double[] admissible_cmi;  // conditional mutual info for admissible features in _admissible_features
@@ -28,7 +28,7 @@ public class InfoGramModelV99 extends ModelSchemaV3<InfoGramModel, InfoGramModel
     String relevance_cmi_key;
   }
 
-  public InfoGramV99.INFOGRAMParametersV99 createparametersSchema() { return new InfoGramV99.INFOGRAMParametersV99(); }
+  public InfoGramV99.InfoGramParametersV99 createparametersSchema() { return new InfoGramV99.InfoGramParametersV99(); }
 
   public InfoGramModelV99.InfoGramOutputV99 createOutputSchema() { return new InfoGramModelV99.InfoGramOutputV99(); }
 
