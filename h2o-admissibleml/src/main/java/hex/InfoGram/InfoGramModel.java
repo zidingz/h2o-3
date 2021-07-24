@@ -78,8 +78,10 @@ public class InfoGramModel extends Model<InfoGramModel, InfoGramModel.InfoGramPa
     public Model.Parameters _infogram_algorithm_parameters;   // store parameters of chosen algorithm
     public Model.Parameters _model_algorithm_parameters;   // store parameters of chosen algorithm
     public int _ntop = 50;                           // if 0 consider all predictors, otherwise, consider topk predictors
-    public boolean _pval = false;                   // if true, will calculate p-value
+    public boolean _compute_p_values = false;                   // if true, will calculate p-value
     public int _parallelism;                        // how many models to build in parallel
+   // public boolean _early_stopping = true;
+   // public boolean _non_negative = false;
 
     public enum Algorithm {
       deeplearning,

@@ -120,6 +120,9 @@ public class InfoGram extends ModelBuilder<InfoGramModel, InfoGramModel.InfoGram
 
     if (_parms._parallelism == 0) // adaptively set parallelism
       _parms._parallelism = 2* H2O.NUMCPUS;
+    
+    if (_parms._compute_p_values)
+      error("compute_p_values", " compute_p_values calculation is not yet implemented.");
   }
 
   private class InfoGramDriver extends Driver {

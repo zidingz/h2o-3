@@ -25,10 +25,10 @@ public class InfoGramV99 extends ModelBuilderSchema<InfoGram, InfoGramV99, InfoG
             "score_each_iteration",
             "offset_column",
             "weights_column",
-            "early_stopping",
+          //  "early_stopping",
             "standardize",
-            "non-negative",
-            "missing_values_handling",
+         //   "non_negative",
+          //  "missing_values_handling",
             "plug_values",
             "max_iterations",
             "stopping_rounds",
@@ -53,7 +53,7 @@ public class InfoGramV99 extends ModelBuilderSchema<InfoGram, InfoGramV99, InfoG
             "data_fraction",
             "parallelism",
             "ntop",
-            "pval"
+            "compute_p_values"
     };
 
     @API(help = "Seed for pseudo random number generator (if applicable)", gridable = true)
@@ -66,8 +66,8 @@ public class InfoGramV99 extends ModelBuilderSchema<InfoGram, InfoGramV99, InfoG
     @API(help = "Plug Values (a single row frame containing values that will be used to impute missing values of the training/validation frame, use with conjunction missing_values_handling = PlugValues)", direction = API.Direction.INPUT)
     public KeyV3.FrameKeyV3 plug_values;
 
-    @API(help = "Restrict coefficients (not intercept) to be non-negative")
-    public boolean non_negative;
+/*    @API(help = "Restrict coefficients (not intercept) to be non-negative")
+    public boolean non_negative;*/
 
     @API(help = "Maximum number of iterations", level = API.Level.secondary)
     public int max_iterations;
@@ -129,7 +129,7 @@ public class InfoGramV99 extends ModelBuilderSchema<InfoGram, InfoGramV99, InfoG
 
     @API(help = "variable importance threshold between 0 and 1 that is used to decide whether a predictor's relevance" +
             " level is high enough.  Default to 0.1", level = API.Level.secondary, gridable = true)
-    public double varimp_threshod;
+    public double varimp_threshold;
 
     @API(help = "fraction of training frame to use to build the infogram model.  Default to 1.0",
             level = API.Level.secondary, gridable = true)
@@ -146,6 +146,9 @@ public class InfoGramV99 extends ModelBuilderSchema<InfoGram, InfoGramV99, InfoG
 
     @API(help = "If true will calculate the p-value. Default to false",
             level = API.Level.secondary, gridable = false)
-    public int pval;
+    public boolean compute_p_values;  // todo implement this option
+    
+/*    @API(help="Stop early when there is no more relative improvement on train")
+    public boolean early_stopping;*/
   }
 }
