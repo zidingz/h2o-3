@@ -353,7 +353,7 @@ public class InfoGramPipingTest extends TestUtil {
   }
 
   public static void assertEqualCMIRel(List<String> predictorNames, double[] deepRel, double[] deepCMI,
-                                       InfoGramModel.InfoGramOutput output, double tolerance, List<Integer> excludeList) {
+                                       InfoGramModel.InfoGramModelOutput output, double tolerance, List<Integer> excludeList) {
     int numPred = predictorNames.size();
     String[] predictorWNames = output._all_predictor_names;
     double[] modelRelevance = output._relevance;

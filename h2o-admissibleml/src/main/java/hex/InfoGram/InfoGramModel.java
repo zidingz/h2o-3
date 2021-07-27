@@ -27,7 +27,7 @@ import static hex.genmodel.utils.DistributionFamily.multinomial;
 import static hex.glm.GLMModel.GLMParameters.Family.binomial;
 import static water.util.ArrayUtils.sort;
 
-public class InfoGramModel extends Model<InfoGramModel, InfoGramModel.InfoGramParameter, InfoGramModel.InfoGramOutput> {
+public class InfoGramModel extends Model<InfoGramModel, InfoGramModel.InfoGramParameter, InfoGramModel.InfoGramModelOutput> {
   /**
    * Full constructor
    *
@@ -35,7 +35,7 @@ public class InfoGramModel extends Model<InfoGramModel, InfoGramModel.InfoGramPa
    * @param parms
    * @param output
    */
-  public InfoGramModel(Key<InfoGramModel> selfKey, InfoGramModel.InfoGramParameter parms, InfoGramModel.InfoGramOutput output) {
+  public InfoGramModel(Key<InfoGramModel> selfKey, InfoGramModel.InfoGramParameter parms, InfoGramModelOutput output) {
     super(selfKey, parms, output);
   }
 
@@ -226,7 +226,7 @@ public class InfoGramModel extends Model<InfoGramModel, InfoGramModel.InfoGramPa
     }
   }
 
-  public static class InfoGramOutput extends Model.Output {
+  public static class InfoGramModelOutput extends Model.Output {
     public double[] _admissible_cmi;  // conditional info for admissible features in _admissible_features
     public double[] _admissible_relevance;  // varimp values for admissible features in _admissible_features
     public String[] _admissible_features; // predictors chosen that exceeds both conditional_info and varimp thresholds
@@ -249,7 +249,7 @@ public class InfoGramModel extends Model<InfoGramModel, InfoGramModel.InfoGramPa
       throw new IllegalArgumentException("InfoGram currently only support binomial and multinomial classification");
     }
 
-    public InfoGramOutput(InfoGram b) {
+    public InfoGramModelOutput(InfoGram b) {
       super(b);
       if (glm.equals(b._parms._infogram_algorithm)) {
         if (binomial.equals(((GLMModel.GLMParameters) b._parms._infogram_algorithm_parameters)._family))

@@ -1,14 +1,13 @@
-package water.infogram.api.schemas;
+package hex.schemas;
 
 import hex.InfoGram.InfoGram;
 import hex.InfoGram.InfoGramModel;
-import hex.schemas.ModelBuilderSchema;
 import water.api.API;
 import water.api.schemas3.KeyV3;
 import water.api.schemas3.ModelParametersSchemaV3;
 
-public class InfoGramV99 extends ModelBuilderSchema<InfoGram, InfoGramV99, InfoGramV99.InfoGramParametersV99> {
-  public static final class InfoGramParametersV99 extends ModelParametersSchemaV3<InfoGramModel.InfoGramParameter, InfoGramParametersV99> {
+public class InfoGramV3 extends ModelBuilderSchema<InfoGram, InfoGramV3, InfoGramV3.InfoGramParametersV3> {
+  public static final class InfoGramParametersV3 extends ModelParametersSchemaV3<InfoGramModel.InfoGramParameter, InfoGramParametersV3> {
     public static final String[] fields = new String[] {
             "model_id",
             "training_frame",

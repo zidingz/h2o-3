@@ -20,7 +20,7 @@ import static hex.InfoGram.InfoGramUtils.*;
 import static hex.gam.MatrixFrameUtils.GamUtils.keepFrameKeys;
 
 public class InfoGram extends ModelBuilder<InfoGramModel, InfoGramModel.InfoGramParameter,
-        InfoGramModel.InfoGramOutput> {
+        InfoGramModel.InfoGramModelOutput> {
   boolean _buildCore; // true to find core predictors, false to find admissible predictors
   String[] _topKPredictors; // contain the names of top predictors to consider for infogram
   Frame _baseOrSensitiveFrame = null;
@@ -150,7 +150,7 @@ public class InfoGram extends ModelBuilder<InfoGramModel, InfoGramModel.InfoGram
     public final void buildModel() {
       InfoGramModel model = null;
       try {
-        model = new InfoGramModel(dest(), _parms, new InfoGramModel.InfoGramOutput(InfoGram.this));
+        model = new InfoGramModel(dest(), _parms, new InfoGramModel.InfoGramModelOutput(InfoGram.this));
         model.write_lock(_job);
         _cmiRaw = new double[_numModels];
         buildInfoGramsNRelevance(); // calculate mean CMI
