@@ -154,6 +154,7 @@ reference:
       - h2o.import_sql_table
       - h2o.importFile
       - h2o.impute
+      - h2o.infogram
       - h2o.init
       - h2o.insertMissingValues
       - h2o.interaction

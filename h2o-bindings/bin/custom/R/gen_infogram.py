@@ -1,28 +1,16 @@
 rest_api_version = 3
 
-
 def update_param(name, param):
     if name == 'model_algorithm_params':
-        param['type'] = 'KeyValue'
         param['default_value'] = None
         return param
     elif name == 'infogram_algorithm_params':
-        param['type'] = 'KeyValue'
         param['default_value'] = None
         return param
     return None  # param untouched
 
 extensions = dict(
-    required_params=['x', 'y', 'training_frame', 'gam_columns'],  # empty to override defaults in gen_defaults
-    validate_required_params="""
-    # If x is missing, no predictors will be used.  Only the gam columns are present as predictors
-    if (missing(x) && infogram_algorithm_params=='GAM') {
-        x = NULL
-    } else {
-        stop("predictor columns x must be specified except for GAM.")
-    }
-
-    """,
+    required_params=['x', 'y', 'training_frame'],  # empty to override defaults in gen_defaults
     set_required_params="""
     parms$training_frame <- training_frame
     args <- .verify_dataxy(training_frame, x, y)
@@ -31,7 +19,6 @@ extensions = dict(
     if( !missing(fold_column) && !is.null(fold_column)) args$x_ignore <- args$x_ignore[!( fold_column == args$x_ignore )]
     parms$ignored_columns <- args$x_ignore
     parms$response_column <- args$y
-    parms$gam_columns <- gam_columns
     """,
 
     validate_params="""
@@ -79,6 +66,13 @@ if (!missing(model_algorithm_params)) {
     model@parameters$model_algorithm_params <- list(fromJSON(model@parameters$model_algorithm_params))[[1]] #Need the `[[ ]]` to avoid a nested list
 }
 """,
+    module="""
+.h2o.get_relevance_cmi_frame<- function(model) {
+  if( is(model, "H2OModel") ) {
+  return model
+  }
+}
+"""
 )
 # modify this for infogram.
 doc = dict(
@@ -94,11 +88,10 @@ Given a sensitive/unfair predictors list, InfoGram will add all predictors that 
     examples="""
     h2o.init()
 
-    # Run GAM of CAPSULE ~ AGE + RACE + PSA + DCAPS
+    # Run infogram of CAPSULE ~ AGE + RACE + PSA + DCAPS
     prostate_path <- system.file("extdata", "prostate.csv", package = "h2o")
     prostate <- h2o.uploadFile(path = prostate_path)
     prostate$CAPSULE <- as.factor(prostate$CAPSULE)
-    h2o.gam(y = "CAPSULE", x = c("RACE"), gam_columns = c("PSA"),
-         training_frame = prostate, family = "binomial")
+    h2o.infogram(y = "CAPSULE", x = c("RACE", "AGE", "PSA", "DCAPS"), training_frame = prostate, family = "binomial")
     """
 )
