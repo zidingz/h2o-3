@@ -72,7 +72,7 @@ class H2OInfoGramEstimator(H2OEstimator):
                  conditional_info_threshold=0.1,  # type: float
                  varimp_threshold=0.1,  # type: float
                  data_fraction=1.0,  # type: float
-                 parallelism=0,  # type: int
+                 parallel_run_number=0,  # type: int
                  ntop=50,  # type: int
                  compute_p_values=False,  # type: bool
                  ):
@@ -209,10 +209,10 @@ class H2OInfoGramEstimator(H2OEstimator):
         :param data_fraction: fraction of training frame to use to build the infogram model.  Default to 1.0
                Defaults to ``1.0``.
         :type data_fraction: float
-        :param parallelism: number of models to build in parallel.  Default to 0.0 which is adaptive to the system
-               capability
+        :param parallel_run_number: number of models to build in parallel.  Default to 0.0 which is adaptive to the
+               system capability
                Defaults to ``0``.
-        :type parallelism: int
+        :type parallel_run_number: int
         :param ntop: number of top k variables to consider based on the varimp.  Default to 0.0 which is to consider all
                predictors
                Defaults to ``50``.
@@ -260,7 +260,7 @@ class H2OInfoGramEstimator(H2OEstimator):
         self.conditional_info_threshold = conditional_info_threshold
         self.varimp_threshold = varimp_threshold
         self.data_fraction = data_fraction
-        self.parallelism = parallelism
+        self.parallel_run_number = parallel_run_number
         self.ntop = ntop
         self.compute_p_values = compute_p_values
         self._parms["_rest_version"] = 3
@@ -809,18 +809,18 @@ class H2OInfoGramEstimator(H2OEstimator):
         self._parms["data_fraction"] = data_fraction
 
     @property
-    def parallelism(self):
+    def parallel_run_number(self):
         """
         number of models to build in parallel.  Default to 0.0 which is adaptive to the system capability
 
         Type: ``int``, defaults to ``0``.
         """
-        return self._parms.get("parallelism")
+        return self._parms.get("parallel_run_number")
 
-    @parallelism.setter
-    def parallelism(self, parallelism):
-        assert_is_type(parallelism, None, int)
-        self._parms["parallelism"] = parallelism
+    @parallel_run_number.setter
+    def parallel_run_number(self, parallel_run_number):
+        assert_is_type(parallel_run_number, None, int)
+        self._parms["parallel_run_number"] = parallel_run_number
 
     @property
     def ntop(self):

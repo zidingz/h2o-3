@@ -61,7 +61,7 @@ public class InfoGramV3 extends ModelBuilderSchema<InfoGram, InfoGramV3, InfoGra
             "conditional_info_threshold",
             "varimp_threshold",
             "data_fraction",
-            "parallelism",
+            "parallel_run_number",
             "ntop",
             "compute_p_values"
     };
@@ -149,7 +149,7 @@ public class InfoGramV3 extends ModelBuilderSchema<InfoGram, InfoGramV3, InfoGra
 
     @API(help = "number of models to build in parallel.  Default to 0.0 which is adaptive to the system capability",
             level = API.Level.secondary, gridable = true)
-    public int parallelism;
+    public int parallel_run_number;
 
     @API(help = "number of top k variables to consider based on the varimp.  Default to 0.0 which is to consider" +
             " all predictors",

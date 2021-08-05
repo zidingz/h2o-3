@@ -75,7 +75,7 @@
 #' @param varimp_threshold variable importance threshold between 0 and 1 that is used to decide whether a predictor's relevance level is
 #'        high enough.  Default to 0.1 Defaults to 0.1.
 #' @param data_fraction fraction of training frame to use to build the infogram model.  Default to 1.0 Defaults to 1.
-#' @param parallelism number of models to build in parallel.  Default to 0.0 which is adaptive to the system capability Defaults to
+#' @param parallel_run_number number of models to build in parallel.  Default to 0.0 which is adaptive to the system capability Defaults to
 #'        0.
 #' @param ntop number of top k variables to consider based on the varimp.  Default to 0.0 which is to consider all predictors
 #'        Defaults to 50.
@@ -128,7 +128,7 @@ h2o.infogram <- function(x,
                          conditional_info_threshold = 0.1,
                          varimp_threshold = 0.1,
                          data_fraction = 1,
-                         parallelism = 0,
+                         parallel_run_number = 0,
                          ntop = 50,
                          compute_p_values = FALSE)
 {
@@ -144,18 +144,6 @@ h2o.infogram <- function(x,
      } else {
          x <- setdiff(colnames(training_frame), y)
      }
-  }
-
-  # Validate other args
-  # if (!is.null(beta_constraints)) {
-  #     if (!inherits(beta_constraints, 'data.frame') && !is.H2OFrame(beta_constraints))
-  #       stop(paste('`beta_constraints` must be an H2OH2OFrame or R data.frame. Got: ', class(beta_constraints)))
-  #     if (inherits(beta_constraints, 'data.frame')) {
-  #       beta_constraints <- as.h2o(beta_constraints)
-  #     }
-  # }
-  if (inherits(beta_constraints, 'data.frame')) {
-    beta_constraints <- as.h2o(beta_constraints)
   }
 
   # Build parameter list to send to model builder
@@ -230,8 +218,8 @@ h2o.infogram <- function(x,
     parms$varimp_threshold <- varimp_threshold
   if (!missing(data_fraction))
     parms$data_fraction <- data_fraction
-  if (!missing(parallelism))
-    parms$parallelism <- parallelism
+  if (!missing(parallel_run_number))
+    parms$parallel_run_number <- parallel_run_number
   if (!missing(ntop))
     parms$ntop <- ntop
   if (!missing(compute_p_values))
@@ -252,10 +240,8 @@ h2o.infogram <- function(x,
       # Expunge nfolds from the message sent to H2O, since H2O doesn't understand it.
   if (!missing(nfolds) && nfolds > 1)
       parms$nfolds <- nfolds
-  if(!missing(beta_constraints))
-      parms$beta_constraints <- beta_constraints
-      if(!missing(missing_values_handling))
-          parms$missing_values_handling <- missing_values_handling
+  if(!missing(missing_values_handling))
+      parms$missing_values_handling <- missing_values_handling
 
   # Error check and build model
   model <- .h2o.modelJob('infogram', parms, h2oRestApiVersion=3, verbose=FALSE)
@@ -304,7 +290,7 @@ h2o.infogram <- function(x,
                                          conditional_info_threshold = 0.1,
                                          varimp_threshold = 0.1,
                                          data_fraction = 1,
-                                         parallelism = 0,
+                                         parallel_run_number = 0,
                                          ntop = 50,
                                          compute_p_values = FALSE,
                                          segment_columns = NULL,
@@ -327,18 +313,6 @@ h2o.infogram <- function(x,
      } else {
          x <- setdiff(colnames(training_frame), y)
      }
-  }
-
-  # Validate other args
-  # if (!is.null(beta_constraints)) {
-  #     if (!inherits(beta_constraints, 'data.frame') && !is.H2OFrame(beta_constraints))
-  #       stop(paste('`beta_constraints` must be an H2OH2OFrame or R data.frame. Got: ', class(beta_constraints)))
-  #     if (inherits(beta_constraints, 'data.frame')) {
-  #       beta_constraints <- as.h2o(beta_constraints)
-  #     }
-  # }
-  if (inherits(beta_constraints, 'data.frame')) {
-    beta_constraints <- as.h2o(beta_constraints)
   }
 
   # Build parameter list to send to model builder
@@ -411,8 +385,8 @@ h2o.infogram <- function(x,
     parms$varimp_threshold <- varimp_threshold
   if (!missing(data_fraction))
     parms$data_fraction <- data_fraction
-  if (!missing(parallelism))
-    parms$parallelism <- parallelism
+  if (!missing(parallel_run_number))
+    parms$parallel_run_number <- parallel_run_number
   if (!missing(ntop))
     parms$ntop <- ntop
   if (!missing(compute_p_values))
@@ -433,10 +407,8 @@ h2o.infogram <- function(x,
       # Expunge nfolds from the message sent to H2O, since H2O doesn't understand it.
   if (!missing(nfolds) && nfolds > 1)
       parms$nfolds <- nfolds
-  if(!missing(beta_constraints))
-      parms$beta_constraints <- beta_constraints
-      if(!missing(missing_values_handling))
-          parms$missing_values_handling <- missing_values_handling
+  if(!missing(missing_values_handling))
+      parms$missing_values_handling <- missing_values_handling
 
   # Build segment-models specific parameters
   segment_parms <- list()
@@ -454,7 +426,7 @@ h2o.infogram <- function(x,
 
 .h2o.get_relevance_cmi_frame<- function(model) {
   if( is(model, "H2OModel") ) {
-  return model
+  return(model)
   }
 }
 

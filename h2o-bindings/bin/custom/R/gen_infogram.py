@@ -21,20 +21,8 @@ extensions = dict(
     parms$response_column <- args$y
     """,
 
-    validate_params="""
-    # if (!is.null(beta_constraints)) {
-    #     if (!inherits(beta_constraints, 'data.frame') && !is.H2OFrame(beta_constraints))
-    #       stop(paste('`beta_constraints` must be an H2OH2OFrame or R data.frame. Got: ', class(beta_constraints)))
-    #     if (inherits(beta_constraints, 'data.frame')) {
-    #       beta_constraints <- as.h2o(beta_constraints)
-    #     }
-    # }
-    if (inherits(beta_constraints, 'data.frame')) {
-      beta_constraints <- as.h2o(beta_constraints)
-    }
-    """,
     skip_default_set_params_for=['training_frame', 'ignored_columns', 'response_column', 'max_confusion_matrix_size',
-                                 "interactions", "nfolds", "beta_constraints", "missing_values_handling", 
+                                 "interactions", "nfolds", "missing_values_handling", 
                                  "infogram_algorithm_params", "model_algorithm_params"],
     set_params="""
 if (!missing(infogram_algorithm_params))
@@ -52,10 +40,8 @@ if( !missing(interactions) ) {
     # Expunge nfolds from the message sent to H2O, since H2O doesn't understand it.
 if (!missing(nfolds) && nfolds > 1)
     parms$nfolds <- nfolds
-if(!missing(beta_constraints))
-    parms$beta_constraints <- beta_constraints
-    if(!missing(missing_values_handling))
-        parms$missing_values_handling <- missing_values_handling
+if(!missing(missing_values_handling))
+    parms$missing_values_handling <- missing_values_handling
 """,
     with_model="""
 # Convert infogram_algorithm_params back to list if not NULL
@@ -69,7 +55,7 @@ if (!missing(model_algorithm_params)) {
     module="""
 .h2o.get_relevance_cmi_frame<- function(model) {
   if( is(model, "H2OModel") ) {
-  return model
+  return(model)
   }
 }
 """
