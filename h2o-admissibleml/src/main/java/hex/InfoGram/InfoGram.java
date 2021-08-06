@@ -120,11 +120,11 @@ public class InfoGram extends ModelBuilder<InfoGramModel, InfoGramModel.InfoGram
       error("nfolds", "please specify nfolds as part of the algorithm specific parameter in " +
               "_info_algorithm_parms or _model_algorithm_parms");
 
-    if (_parms._parallel_run_number < 0)
-      error("parallel_run_number", "must be >= 0.  If 0, it is adaptive");
+    if (_parms._nparallelism < 0)
+      error("nparallelism", "must be >= 0.  If 0, it is adaptive");
 
-    if (_parms._parallel_run_number == 0) // adaptively set parallel_run_number
-      _parms._parallel_run_number = 2* H2O.NUMCPUS;
+    if (_parms._nparallelism == 0) // adaptively set nparallelism
+      _parms._nparallelism = 2* H2O.NUMCPUS;
     
     if (_parms._compute_p_values)
       error("compute_p_values", " compute_p_values calculation is not yet implemented.");
@@ -170,7 +170,7 @@ public class InfoGram extends ModelBuilder<InfoGramModel, InfoGramModel.InfoGram
         model._output.copyCMIRelevance(_cmiRaw, _cmi, _topKPredictors, _varImp); // copy over cmi, relevance of all predictors
         _cmi = model._output._cmi;
         _cmiRelKey = model._output.generateCMIRelFrame();
-        model._output.extractAdmissibleFeatures(_varImp, model._output._all_predictor_names, _cmi,
+        model._output.extractAdmissibleFeatures(_varImp, model._output._all_predictor_names, _cmi, _cmiRaw,
                 _parms._conditional_info_threshold, _parms._varimp_threshold);  // extract admissible information model output
         Model finalModel = buildFinalModel(model._output._admissible_features);
         Scope.track_generic(finalModel);
@@ -205,13 +205,13 @@ public class InfoGram extends ModelBuilder<InfoGramModel, InfoGramModel.InfoGram
     }
 
     private void buildInfoGramsNRelevance() {
-      int outerLoop = (int) Math.floor(_numModels/_parms._parallel_run_number); // last model is build special
+      int outerLoop = (int) Math.floor(_numModels/_parms._nparallelism); // last model is build special
       int modelCount = 0;
       int lastModelInd = _numModels - 1;
-      if (outerLoop > 0) {  // build parallel models but limit it to parms._parallel_run_number at a time
+      if (outerLoop > 0) {  // build parallel models but limit it to parms._nparallelism at a time
         for (int outerInd = 0; outerInd < outerLoop; outerInd++) {
-          buildModelCMINRelevance(modelCount, _parms._parallel_run_number, lastModelInd);
-          modelCount += _parms._parallel_run_number;
+          buildModelCMINRelevance(modelCount, _parms._nparallelism, lastModelInd);
+          modelCount += _parms._nparallelism;
         }
       }
       int leftOver = _numModels - modelCount;

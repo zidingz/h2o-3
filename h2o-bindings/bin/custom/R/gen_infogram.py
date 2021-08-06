@@ -22,26 +22,12 @@ extensions = dict(
     """,
 
     skip_default_set_params_for=['training_frame', 'ignored_columns', 'response_column', 'max_confusion_matrix_size',
-                                 "interactions", "nfolds", "missing_values_handling", 
                                  "infogram_algorithm_params", "model_algorithm_params"],
     set_params="""
 if (!missing(infogram_algorithm_params))
     parms$infogram_algorithm_params <- as.character(toJSON(infogram_algorithm_params, pretty = TRUE))
 if (!missing(model_algorithm_params))
     parms$model_algorithm_params <- as.character(toJSON(model_algorithm_params, pretty = TRUE))
-if( !missing(interactions) ) {
-    # interactions are column names => as-is
-    if( is.character(interactions) )       parms$interactions <- interactions
-      else if( is.numeric(interactions) )    parms$interactions <- names(training_frame)[interactions]
-      else stop(\"Don't know what to do with interactions. Supply vector of indices or names\")
-}
-    # For now, accept nfolds in the R interface if it is 0 or 1, since those values really mean do nothing.
-    # For any other value, error out.
-    # Expunge nfolds from the message sent to H2O, since H2O doesn't understand it.
-if (!missing(nfolds) && nfolds > 1)
-    parms$nfolds <- nfolds
-if(!missing(missing_values_handling))
-    parms$missing_values_handling <- missing_values_handling
 """,
     with_model="""
 # Convert infogram_algorithm_params back to list if not NULL
@@ -53,10 +39,58 @@ if (!missing(model_algorithm_params)) {
 }
 """,
     module="""
-.h2o.get_relevance_cmi_frame<- function(model) {
-  if( is(model, "H2OModel") ) {
-  return(model)
-  }
+#' @export   
+h2o.get_relevance_cmi_frame<- function(object) {
+  if( is(object, "H2OModel") && (object@algorithm=='infogram'))
+    return(h2o.getFrame(object@model$relevance_cmi_key))
+}
+
+#' @export 
+h2o.get_admissible_attributes<-function(object) {
+  if ( is(object, "H2OModel") && (object@algorithm=='infogram'))
+    return(object@model$admissible_features)
+}
+
+#' @export 
+h2o.get_admissible_relevance<-function(object) {
+  if ( is(object, "H2OModel") && (object@algorithm=='infogram'))
+    return(object@model$admissible_relevance)
+}
+
+#' @export 
+h2o.get_admissible_cmi<-function(object) {
+  if ( is(object, "H2OModel") && (object@algorithm=='infogram'))
+    return(object@model$admissible_cmi)
+}
+
+#' @export 
+h2o.get_admissible_cmi_raw<-function(object) {
+  if ( is(object, "H2OModel") && (object@algorithm=='infogram'))
+    return(object@model$admissible_cmi)
+}
+
+#' @export 
+h2o.get_all_predictor_relevance<-function(object) {
+  if ( is(object, "H2OModel") && (object@algorithm=='infogram'))
+    return(object@model$relevance)
+}
+
+#' @export 
+h2o.get_all_predictor_cmi<-function(object) {
+  if ( is(object, "H2OModel") && (object@algorithm=='infogram'))
+    return(object@model$cmi)
+}
+
+#' @export 
+h2o.get_all_predictor_cmi_raw<-function(object) {
+  if ( is(object, "H2OModel") && (object@algorithm=='infogram'))
+    return(object@model$cmi_raw)
+}
+
+#' @export 
+h2o.get_all_predictor_names<-function(object) {
+  if ( is(object, "H2OModel") && (object@algorithm=='infogram'))
+    return(object@model$all_predictor_names)
 }
 """
 )

@@ -79,7 +79,7 @@ public class InfoGramModel extends Model<InfoGramModel, InfoGramModel.InfoGramPa
     public Model.Parameters _model_algorithm_parameters;   // store parameters of chosen algorithm
     public int _ntop = 50;                           // if 0 consider all predictors, otherwise, consider topk predictors
     public boolean _compute_p_values = false;                   // if true, will calculate p-value
-    public int _parallel_run_number = 0;
+    public int _nparallelism = 0;
 
     public enum Algorithm {
       AUTO,
@@ -227,6 +227,7 @@ public class InfoGramModel extends Model<InfoGramModel, InfoGramModel.InfoGramPa
 
   public static class InfoGramModelOutput extends Model.Output {
     public double[] _admissible_cmi;  // conditional info for admissible features in _admissible_features
+    public double[] _admissible_cmi_raw;  // conditional info for admissible features in _admissible_features raw
     public double[] _admissible_relevance;  // varimp values for admissible features in _admissible_features
     public String[] _admissible_features; // predictors chosen that exceeds both conditional_info and varimp thresholds
     public DistributionFamily _distribution;
@@ -260,11 +261,12 @@ public class InfoGramModel extends Model<InfoGramModel, InfoGramModel.InfoGramPa
       }
     }
 
-    public void extractAdmissibleFeatures(TwoDimTable varImp, String[] topKPredictors, double[] cmi,
+    public void extractAdmissibleFeatures(TwoDimTable varImp, String[] topKPredictors, double[] cmi, double[] cmiRaw,
                                           double cmiThreshold, double varImpThreshold) {
       int numRows = varImp.getRowDim();
       List<Double> varimps = new ArrayList<>();
       List<Double> predictorCMI = new ArrayList<>();
+      List<Double> predictorCMIRaw = new ArrayList<>();
       List<String> topKList = new ArrayList<>(Arrays.asList(topKPredictors));
       List<String> admissiblePred = new ArrayList<>();
       String[] varRowHeaders = varImp.getRowHeaders();
@@ -275,12 +277,14 @@ public class InfoGramModel extends Model<InfoGramModel, InfoGramModel.InfoGramPa
           if (cmi[predIndex] > cmiThreshold) {
             varimps.add(varimp);
             predictorCMI.add(cmi[predIndex]);
+            predictorCMIRaw.add(cmiRaw[predIndex]);
             admissiblePred.add(topKPredictors[predIndex]);
           }
         }
       }
       _admissible_features = admissiblePred.toArray(new String[admissiblePred.size()]);
       _admissible_cmi = predictorCMI.stream().mapToDouble(i -> i).toArray();
+      _admissible_cmi_raw = predictorCMIRaw.stream().mapToDouble(i->i).toArray();
       _admissible_relevance = varimps.stream().mapToDouble(i -> i).toArray();
     }
 
