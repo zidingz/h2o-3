@@ -113,14 +113,6 @@ def class_extensions():
         
         def extend_parms(parms): # add parameter checks specific to infogram
             training_col_names = training_frame.names
-            assert_is_type(parms["infogram_algorithm"], None, str)
-            assert_is_type(parms["model_algorithm"], None, str)
-            assert_is_type(parms["sensitive_attributes"], None, list)
-            if isinstance(parms["sensitive_attributes"], list):
-                for obj in parms["sensitive_attributes"]:
-                    assert_is_type(obj, str)
-                    if not(obj in training_col_names):
-                        raise H2OValueError("Column %s does not exist in the training frame" % obj)
             if not(parms["conditional_info_threshold"] == None):
                 assert_is_type(parms["conditional_info_threshold"], numeric)
                 assert parms["conditional_info_threshold"] >= 0 and parms["conditional_info_threshold"] <= 1,\
@@ -133,8 +125,6 @@ def class_extensions():
                 assert_is_type(parms["data_fraction"], numeric)
                 assert parms["data_fraction"] > 0 and parms["data_fraction"] <= 1, "data_fraction should exceed 0" \
                                                                                " and <= 1."
-            assert_is_type(parms["parallelism"], None, int)
-            assert_is_type(parms["ntop"], None, int)
         
         parms = sup._make_parms(x,y,training_frame, extend_parms_fn = extend_parms, **kwargs)
         sup._train(parms, verbose=verbose)
