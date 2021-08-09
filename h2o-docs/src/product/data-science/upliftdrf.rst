@@ -4,9 +4,9 @@ Distributed Uplift Random Forest (Uplift DRF)
 Introduction
 ~~~~~~~~~~~~
 
-Distributed Uplift Random Forest (Uplift DRF) is classification tool for modeling uplift - the incremental impact of a treatment. Only binomial classification (``distribution="bernoulli"``) is currently supported. 
+Distributed Uplift Random Forest (Uplift DRF) is a classification tool for modeling uplift - the incremental impact of a treatment. Only binomial classification (``distribution="bernoulli"``) is currently supported. 
 
-Uplift DRF can be applied in fields where we operate with two groups of subjects. Fist group, let's call it treatment, receive some kind of treatment (marketing campaign, medicine,...), and a second group, let's call it control, is separated from the treatment. We also gather information about their response, whether they bought a product, recover from disease, and similar. Then Uplift DRF trains so-called uplift trees. Uplift trees take information about treatment/control group assignment and information about response directly into a decision about split a node. The output of uplift model is the probability of change in user behavior which helps to decide if treatment impacts the desired behavior (buy a product, recover from disease,...). In other words, if a user responds because the user was treated. This leads to proper campaign targeting on a subject that genuinely needs to be treated and avoid wasting resources on subjects that respond/do not respond anyway.
+Uplift DRF can be applied in fields where we operate with two groups of subjects. Fist group, let's call it treatment, receive some kind of treatment (marketing campaign, medicine,...), and a second group, let's call it control, is separated from the treatment. We also gather information about their response, whether they bought a product, recover from disease, and similar. Then, Uplift DRF trains so-called uplift trees. Uplift trees take information about treatment/control group assignment and information about response directly into a decision about splitting a node. The output of the uplift model is the probability of change in user behavior which helps to decide if treatment impacts the desired behavior (buy a product, recover from disease,...). In other words, if a user responds because the user was treated. This leads to proper campaign targeting on a subject that genuinely needs to be treated and avoids wasting resources on subjects that respond/do not respond anyway.
 
 The current version of Uplift DRF is based on implementation of DRF. The principle of training is similar to DRF. When given a set of data, Uplift DRF generates a forest of classification uplift trees, rather than a single classification tree. Each of these trees is a weak learner built on a subset of rows and columns. More trees will reduce the variance. Classification take the average prediction over all of their trees to make a final prediction. (Note: For a categorical response column, Uplift DRF maps factors  (e.g. 'dog', 'cat', 'mouse) in lexicographic order to a name lookup array with integer indices (e.g. 'cat -> 0, 'dog' -> 1, 'mouse' -> 2.)
 
@@ -14,19 +14,20 @@ The current version of Uplift DRF is based on implementation of DRF. The princip
 Uplift metrics
 ~~~~~~~~~~~~~~
 
-The main difference from DRF is in the finding best split point using ``treatment_column``. So the goal is split training customers into a group which get an offer (treatment group) and a group which does not (control group). This information (``treatment_column``) with features and ``response_column`` are used for training. To decide which point from histogram to be selected to split data in the node of a tree, ``uplift metric`` is calculated (instead of calculation squared error in other trees algorithms).
+Uplift DRF differentiates itself from DRF because it finds the best split using ``treatment_column``. The goal is split training customers into a group which get an offer (treatment group) and a group which does not (control group). This information (``treatment_column``) with features and ``response_column`` are used for training. The ``uplift_metric`` is calculated to decide which point from the histogram is selected to split the data in the tree node (instead of calculation squared error like in other tree algorithms).
 
-The goal is maximize the differences between class distributions in treatment and control sets, so the splitting criteria are based on distribution divergences. Based on ``uplift_metric`` parameter the ditribution divergence is calculated. In H2O-3 three ``uplift_metric`` are supported:
+The goal is to maximize the differences between the class distributions in the treatment and control sets, so the splitting criteria are based on distribution divergences. The ditribution divergence is calculated based on the ``uplift_metric`` parameter. In H2O-3, three ``uplift_metric`` types are supported:
 
-- Kullback-Leibler divergence (``uplift_metric="kl"``) - uses logaritmus to calculate divergence, asymetric widely used, tend to infinity values (if treatment or control group distributions contain zero values). :math:`KL(P, Q) = \sum_{i=0}^{N} p_i \log{\frac{p_i}{q_i}} }`
-- The squared Euclidean distance (``uplift_metric="euclidean"``) - symetric and stable distribution (no tend to infinity values). :math:`E(P, Q) = \sum_{i=0}^{N} \sqrt{p_i-q_i}`
-- Chi-squared divergence (``uplift_metric="chi_squared"``) - Euclidean divergence normalized by control group distribution. Asymetric and also tend to infinity values (if control group distribution contains zero values). :math:`\sqrt{X}(P, Q) = \sum_{i=0}^{N} \frac{\sqrt{p_i-q_i}}{q_i}`
+- **Kullback-Leibler divergence** (``uplift_metric="kl"``) - uses logarithms to calculate divergence, asymmetric widely used, tends to infinity values (if treatment or control group distributions contain zero values). :math:`KL(P, Q) = \sum_{{i=0}^{N} p_i \log{\frac{p_i}{q_i}} }`
+- **Squared Euclidean distance** (``uplift_metric="euclidean"``) - symmetric and stable distribution (does not tend to infinity values). :math:`E(P, Q) = \sum_{i=0}^{N} \sqrt{p_i-q_i}`
+- **Chi-squared divergence** (``uplift_metric="chi_squared"``) - Euclidean divergence normalized by control group distribution. Asymmetric and also tends to infinity values (if control group distribution contains zero values). :math:`\sqrt{X}(P, Q) = \sum_{i=0}^{N} \frac{\sqrt{p_i-q_i}}{q_i}`
 
 where:
-:math:`P` is treatment group distribution
-:math:`Q` is control group distribution
 
-In a tree node the result value for split is sum :math:`metric(P, Q) + metric(1-P, 1-Q)`. For split gain value this result in the node is normalized using gini coefficient (Eclidean and ChiSquared option) or entropy (KL option) for each distribution before and after split.
+- :math:`P` is treatment group distribution
+- :math:`Q` is control group distribution
+
+In a tree node the result value for split is sum :math:`metric(P, Q) + metric(1-P, 1-Q)`. For the split gain value, the result within the node is normalized using a gini coefficient (Eclidean or ChiSquared) or entropy (KL) for each distribution before and after the split.
 
 You can read more information about ``uplift_metric`` on parameter specification page: `uplift_metric <algo-params/uplift_metric.html>`__.
 
@@ -35,7 +36,7 @@ You can read more information about ``uplift_metric`` on parameter specification
 Extremely Randomized Trees
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The same goes for Uplift DRF ad for random forests, a random subset of candidate features is used to determine the most discriminative thresholds that are picked as the splitting rule. In extremely randomized trees (XRT), randomness goes one step further in the way that splits are computed. As in random forests, a random subset of candidate features is used, but instead of looking for the most discriminative thresholds, thresholds are drawn at random for each candidate feature, and the best of these randomly generated thresholds is picked as the splitting rule. This usually allows to reduce the variance of the model a bit more, at the expense of a slightly greater increase in bias.
+The same goes for Uplift DRF and for random forests: a random subset of candidate features is used to determine the most discriminative thresholds that are picked as the splitting rule. In extremely randomized trees (XRT), randomness goes one step further in the way that splits are computed. As in random forests, a random subset of candidate features is used, but instead of looking for the most discriminative thresholds, thresholds are drawn at random for each candidate feature, and the best of these randomly generated thresholds is picked as the splitting rule. This usually allows to reduce the variance of the model a bit more, at the expense of a slightly greater increase in bias.
 
 H2O supports extremely randomized trees (XRT) via ``histogram_type="Random"``. When this is specified, the algorithm will sample N-1 points from min...max and use the sorted list of those to find the best split. The cut points are random rather than uniform. For example, to generate 4 bins for some feature ranging from 0-100, 3 random numbers would be generated in this range (13.2, 89.12, 45.0). The sorted list of these random numbers forms the histogram bin boundaries e.g. (0-13.2, 13.2-45.0, 45.0-89.12, 89.12-100).
 
@@ -177,19 +178,20 @@ Defining a Uplift DRF Model
 
 -  `gainslift_bins <algo-params/gainslift_bins.html>`__: The number of bins for a Gains Uplift table. The default value is ``-1`` and makes the binning automatic. To disable this feature, set to ``0``.
 
--  `treatment_column <algo-params/treatment_column.html>`__: Specify the column which contains information about group dividing. The data must be categorical and has two category: ``0`` means the observation is in control group ``1`` means the observation is in treatment group.
+-  `treatment_column <algo-params/treatment_column.html>`__: Specify the column which contains information about group dividing. The data must be categorical and have two categories: ``0`` means the observation is in control group and ``1`` means the observation is in treatment group.
 
 -  `uplift_metric <algo-params/uplift_metric.html>`__: The type of divergence distribution to select best split. Specify one of the following metrics:
   - ``auto`` or ``AUTO``: Allow the algorithm to decide (default). In Uplift DRF, the algorithm will automatically perform ``KL`` metric.
-  - ``kl`` or ``KL``: Uses logaritmus to calculate divergence, asymetric widely used, tend to infinity values (if treatment or control group distributions contain zero values).
-  - ``euclidean`` or ``Euclidean``: Symetric and stable distribution (no tend to infinity values).
-  - ``chi_squared`` or ``ChiSquared``: Euclidean divergence normalized by control group distribution. Asymetric and also tend to infinity values (if control group distribution contains zero values).
+  - ``kl`` or ``KL``: Uses logarithms to calculate divergence, asymmetric widely used, tends to infinity values (if treatment or control group distributions contain zero values).
+  - ``euclidean`` or ``Euclidean``: Symmetric and stable distribution (does not tend to infinity values).
+  - ``chi_squared`` or ``ChiSquared``: Euclidean divergence normalized by control group distribution. Asymmetric and also tends to infinity values (if control group distribution contains zero values).
 
-- -  `auuc_type <algo-params/auuc_type.html>`__: The type of metric to calculate incremental uplift and then Area Under Uplift Curve (AUUC). Specify one of the following AUUC types:
+- `auuc_type <algo-params/auuc_type.html>`__: The type of metric to calculate incremental uplift and then Area Under Uplift Curve (AUUC). Specify one of the following AUUC types:
+
   - ``auto`` or ``AUTO``: Allow the algorithm to decide (default). In Uplift DRF, the algorithm will automatically perform ``qini`` type.
-  - ``qini`` or ``Qini``: 
-  - ``lift`` or ``Lift``: 
-  - ``gain`` or ``Gain``:
+  - ``qini`` or ``Qini`` 
+  - ``lift`` or ``Lift`` 
+  - ``gain`` or ``Gain``
 
 
 Leaf Node Assignment 
@@ -197,8 +199,8 @@ Leaf Node Assignment
 Leaf Node assignment is not currently supported.
 
 
-Interpreting a Uplift DRF Model
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Interpreting an Uplift DRF Model
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 By default, the following output displays:
 
@@ -223,15 +225,16 @@ By default, the following output displays:
 Area under Uplift curve (AUUC) calculation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To be able to calculate AUUC for big data, the predictions are binned to histograms. Due to this feature the results should be different compare to exact computation.
+To calculate AUUC for big data, the predictions are binned to histograms. Due to this feature the results should be different compare to exact computation.
 
-To define AUUC, binned predictions are sorted from the largest value to smallest. For every group cumulative sum of observations statistic is calculated and based on this statistics the uplift is defined. 
+To define AUUC, binned predictions are sorted from the largest to smallest value. For every group the cumulative sum of observations statistic is calculated. The uplift is defined based on these statistics. 
 
 The statistics of every group are:
+
 1. :math:`T` how many observations are in the treatment group (how many data rows in the bin have ``treatment_column`` label == 1) 
 2. :math:`C` how many observations are in the control group (how many data rows int he bin have ``treatment_column`` label == 0)
-3. :math:`TY1` how many observations are in the treatment group and response to the offer (how many data rows in the bin have ``treatment_column`` label == 1 and ``response_column`` label == 1)
-4. :math:`CY1` how many observations are in the control group and response to the offer (how many data rows in the bin have ``treatment_column`` label == 0 and ``response_column`` label == 1)
+3. :math:`TY1` how many observations are in the treatment group and respond to the offer (how many data rows in the bin have ``treatment_column`` label == 1 and ``response_column`` label == 1)
+4. :math:`CY1` how many observations are in the control group and respond to the offer (how many data rows in the bin have ``treatment_column`` label == 0 and ``response_column`` label == 1)
 
 You can set the AUUC type to be computed:
 
@@ -239,7 +242,7 @@ You can set the AUUC type to be computed:
 - Lift (``auuc_type="lift"``) :math:`\frac{TY1}{T} - \frac{CY1}{C}`
 - Gain (``auuc_type="gain"``) :math:`(\frac{TY1}{T} - \frac{CY1}{C}) * (T + C)` 
 
-For some observations groups the results should be NaN, in this case the results from NaN groups are linear interpolated to calculate AUUC and plot uplift curve.
+For some observation groups the results should be NaN. In this case, the results from NaN groups are linearly interpolated to calculate AUUC and plot uplift curve.
 
 .. image:: 
    :width: 425px
@@ -259,7 +262,7 @@ Below is a simple example showing how to build a Uplift Random Forest model.
     # Import the uplift dataset into H2O:
     data <- h2o.importFile(locate("https://s3.amazonaws.com/h2o-public-test-data/smalldata/uplift/criteo_uplift_13k.csv"))
 
-    # Set the predictors, response and treatment column
+    # Set the predictors, response and treatment column:
     # set the predictors
     predictors <- c("f1", "f2", "f3", "f4", "f5", "f6","f7", "f8") 
     # set the response as a factor
@@ -290,7 +293,7 @@ Below is a simple example showing how to build a Uplift Random Forest model.
     # Generate predictions on a validation set (if necessary):
     predict <- h2o.predict(uplift.model, newdata = valid)
 
-    # Plot AUUC
+    # Plot AUUC:
     plot(perf, metric="gain") 
 
    .. code-tab:: python
@@ -302,7 +305,7 @@ Below is a simple example showing how to build a Uplift Random Forest model.
     # Import the cars dataset into H2O:
     data = h2o.import_file("https://s3.amazonaws.com/h2o-public-test-data/smalldata/uplift/criteo_uplift_13k.csv")
 
-    # Set the predictors, response and treatment column
+    # Set the predictors, response and treatment column:
     predictors = ["f1", "f2", "f3", "f4", "f5", "f6","f7", "f8"]
     # set the response as a factor
     response = "conversion"
@@ -333,10 +336,10 @@ Below is a simple example showing how to build a Uplift Random Forest model.
     # Generate predictions on a validation set (if necessary):
     pred = uplift_model.predict(valid)
 
-    # Plot AUUC from model
+    # Plot AUUC from model:
     uplift_model.plot_auuc()
 
-    # Plot AUUC from performance
+    # Plot AUUC from performance:
     perf.plot_auuc(metric="gain", plot=True)    
 
 
@@ -383,27 +386,25 @@ FAQ
 
 -  **Does the algo stop splitting when all the possible splits lead to worse error measures?**
 
-  It does if you use ``min_split_improvement`` (min_split_improvement turned ON by default (0.00001).) When properly tuned, this option can help reduce overfitting. 
+  It does if you use ``min_split_improvement`` (which is turned ON by default (0.00001).) When properly tuned, this option can help reduce overfitting. 
 
 -  **When does the algo stop splitting on an internal node?**
 
   A single tree will stop splitting when there are no more splits that satisfy the minimum rows parameter, if it reaches ``max_depth``, or if there are no splits that satisfy the ``min_split_improvement`` parameter.
 
 -  **How does Uplift DRF decide which feature to split on?**
-
-  TODO 
   
   It splits on the column and level that results in the greatest reduction in residual sum of the squares (RSS) in the subtree at that point. It considers all fields available from the algorithm. Note that any use of column sampling and row sampling will cause each decision to not consider all data points, and that this is on purpose to generate more robust trees. To find the best level, the histogram binning process is used to quickly compute the potential MSE of each possible split. The number of bins is controlled via ``nbins_cats`` for categoricals, the pair of ``nbins`` (the number of bins for the histogram to build, then split at the best point), and ``nbins_top_level`` (the minimum number of bins at the root level to use to build the histogram). This number will then be decreased by a factor of two per level. 
 
   For ``nbins_top_level``, higher = more precise, but potentially more prone to overfitting. Higher also takes more memory and possibly longer to run.
 
--  **What is the difference between nbins and nbins_top_level?**
+-  **What is the difference between** ``nbins`` **and** ``nbins_top_level`` **?**
 
   ``nbins`` and ``nbins_top_level`` are both for numerics (real and integer). ``nbins_top_level`` is the number of bins Uplift DRF uses at the top of each tree. It then divides by 2 at each ensuing level to find a new number. ``nbins`` controls when DRF stops dividing by 2.
 
 -  **How is variable importance calculated for Uplift DRF?**
 
-    Variable importance is not supported for 
+  Variable importance is not supported for Uplift DRF.
 
 -  **How is column sampling implemented for Uplift DRF?**
 
@@ -427,9 +428,9 @@ FAQ
 
   By default, Uplift DRF will go to depth 20, which can lead to up to 1+2+4+8+…+2^19 ~ 1M nodes to be split, and for every one of them, mtries=sqrt(4600)=67 columns need to be considered for splitting. This results in a total work of finding up to 1M*67 ~ 67M split points per tree. Usually, many of the leaves don’t go to depth 20, so the actual number is less. (You can inspect the model to see that value.)
 
-  By default, GBM will go to depth 5, so only 1+2+4+8+16 = 31 nodes to be split, and for every one of them, all 4600 columns need to be considered. This results in a total work of finding up to 31*4600 ~ 143k split points (often all are needed) per tree.
+  By default, GBM will go to depth 5, so there's only 1+2+4+8+16 = 31 nodes to be split, and for every one of them, all 4600 columns need to be considered. This results in a total work of finding up to 31*4600 ~ 143k split points (often all are needed) per tree.
 
-  This is why the shallow depth of GBM is one of the reasons it’s great for wide (for tree purposes) datasets. To make Uplift DRF faster, consider decreasing max_depth and/or mtries and/or ntrees.
+  This is why the shallow depth of GBM is one of the reasons it’s great for wide (for tree purposes) datasets. To make Uplift DRF faster, consider decreasing ``max_depth`` and/or ``mtries`` and/or ``ntrees``.
 
   For both algorithms, finding one split requires a pass over one column and all rows. Assume a dataset with 250k rows and 500 columns. GBM can take minutes minutes, while Uplift DRF may take hours. This is because:
 

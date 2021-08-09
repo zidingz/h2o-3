@@ -37,6 +37,7 @@ H2O supports the following supervised algorithms:
    data-science/coxph
    data-science/deep-learning
    data-science/drf
+   data-science/upliftdrf
    data-science/glm
    data-science/gam
    data-science/gbm

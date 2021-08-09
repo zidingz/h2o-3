@@ -1,5 +1,6 @@
 ``treatment_column``
------
+--------------------
+
 - Available in: Uplift DRF
 - Hyperparameter: no
 
@@ -7,9 +8,15 @@
 Description
 ~~~~~~~~~~~
 
-Use this option to specify a treatment column. The column specifies information about group dividing. The data must be categorical and has two category: ``0`` means the observation is in control group ``1`` means the observation is in treatment group. The group selection should be randomly selected before experiment. The groups should have similar size.
+Use this option to specify a treatment column. The column specifies information about group dividing. The groups should be randomly selected before the experiment begins and should have similar sizes.
 
-Uplift DRF currently support only one treatment and one control group. 
+The data being used must be categorical and have two categories: 
+
+- ``0`` means the observation is in control group 
+- ``1`` means the observation is in treatment group 
+
+
+Uplift DRF currently supports only one treatment and one control group. 
 
 **Notes**: 
 
@@ -34,7 +41,7 @@ Example
     # Import the uplift dataset into H2O:
     data <- h2o.importFile(locate("https://s3.amazonaws.com/h2o-public-test-data/smalldata/uplift/criteo_uplift_13k.csv"))
 
-    # Set the predictors, response and treatment column
+    # Set the predictors, response, and treatment column:
     # set the predictors
     predictors <- c("f1", "f2", "f3", "f4", "f5", "f6","f7", "f8") 
     # set the response as a factor
@@ -76,7 +83,7 @@ Example
     # Import the cars dataset into H2O:
     data = h2o.import_file("https://s3.amazonaws.com/h2o-public-test-data/smalldata/uplift/criteo_uplift_13k.csv")
 
-    # Set the predictors, response and treatment column
+    # Set the predictors, response, and treatment column:
     predictors = ["f1", "f2", "f3", "f4", "f5", "f6","f7", "f8"]
     # set the response as a factor
     response = "conversion"

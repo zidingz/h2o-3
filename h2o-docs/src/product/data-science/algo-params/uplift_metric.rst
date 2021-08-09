@@ -1,5 +1,6 @@
 ``uplift_metric``
------
+-----------------
+
 - Available in: Uplift DRF
 - Hyperparameter: no
 
@@ -9,19 +10,20 @@ Description
 
 Use this option to specify an uplift metric. 
 
-For calculating ``uplift_metric`` aggregated data (class distributions) from data histograms are used:
+Aggregated data (class distributions) from data histograms are used to calculate ``uplift_metric``.
 
-The goal is maximize the differences between class distributions in treatment and control sets, so the splitting criteria are based on distribution divergences. Based on ``uplift_metric`` parameter the ditribution divergence is calculated. In H2O-3 three ``uplift_metric`` are supported:
+The goal is to maximize the differences between class distributions in the treatment and control sets, so the splitting criteria are based on distribution divergences. Based on ``uplift_metric`` parameter, the distribution divergence is calculated. In H2O-3, three ``uplift_metric`` types are supported:
 
-- Kullback-Leibler divergence (``uplift_metric="kl"``) - uses logaritmus to calculate divergence, asymetric widely used, tend to infinity values (if treatment or control group distributions contain zero values). :math:`KL(P, Q) = \sum_{i=0}^{N} p_i \log{\frac{p_i}{q_i}} }`
-- The squared Euclidean distance (``uplift_metric="euclidean"``) - symetric and stable distribution (no tend to infinity values). :math:`E(P, Q) = \sum_{i=0}^{N} \sqrt{p_i-q_i}`
-- Chi-squared divergence (``uplift_metric="chi_squared"``) - Euclidean divergence normalized by control group distribution. Asymetric and also tend to infinity values (if control group distribution contains zero values). :math:`\sqrt{X}(P, Q) = \sum_{i=0}^{N} \frac{\sqrt{p_i-q_i}}{q_i}`
+- **Kullback-Leibler divergence** (``uplift_metric="kl"``) - uses logarithms to calculate divergence, asymmetric widely used, tends to infinity values (if treatment or control group distributions contain zero values). :math:`KL(P, Q) = \sum_{{i=0}^{N} p_i \log{\frac{p_i}{q_i}} }`
+- **Squared Euclidean distance** (``uplift_metric="euclidean"``) - symmetric and stable distribution (does not tend to infinity values). :math:`E(P, Q) = \sum_{i=0}^{N} \sqrt{p_i-q_i}`
+- **Chi-squared divergence** (``uplift_metric="chi_squared"``) - Euclidean divergence normalized by control group distribution. Asymmetric and also tends to infinity values (if control group distribution contains zero values). :math:`\sqrt{X}(P, Q) = \sum_{i=0}^{N} \frac{\sqrt{p_i-q_i}}{q_i}`
 
 where:
-:math:`P` is treatment class distribution
-:math:`Q` is control class distribution
 
-In a tree node the result value for split is sum of metric(P, Q) and metric(1-P, 1-Q). For split gain value this result in the node is normalized using gini coefficient (Eclidean and ChiSquared option) or entropy (KL option) for each distribution before and after split.
+- :math:`P` is treatment class distribution
+- :math:`Q` is control class distribution
+
+In a tree node, the result value for the split is the sum :math:`metric(P, Q) + metric(1-P, 1-Q)`. For the split gain value, the result within the node is normalized using a gini coefficient (Eclidean or ChiSquared) or entropy (KL) for each distribution before and after the split.
 
 
 Related Parameters
@@ -42,7 +44,7 @@ Example
     # Import the uplift dataset into H2O:
     data <- h2o.importFile(locate("https://s3.amazonaws.com/h2o-public-test-data/smalldata/uplift/criteo_uplift_13k.csv"))
 
-    # Set the predictors, response and treatment column
+    # Set the predictors, response and treatment column:
     # set the predictors
     predictors <- c("f1", "f2", "f3", "f4", "f5", "f6","f7", "f8") 
     # set the response as a factor
@@ -81,7 +83,7 @@ Example
     # Import the cars dataset into H2O:
     data = h2o.import_file("https://s3.amazonaws.com/h2o-public-test-data/smalldata/uplift/criteo_uplift_13k.csv")
 
-    # Set the predictors, response and treatment column
+    # Set the predictors, response and treatment column:
     predictors = ["f1", "f2", "f3", "f4", "f5", "f6","f7", "f8"]
     # set the response as a factor
     response = "conversion"
