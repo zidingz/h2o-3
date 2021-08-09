@@ -244,7 +244,7 @@ You can set the AUUC type to be computed:
 
 For some observation groups the results should be NaN. In this case, the results from NaN groups are linearly interpolated to calculate AUUC and plot uplift curve.
 
-.. image:: 
+.. image:: /images/auuc_plot_h2o.png
    :width: 425px
    :height: 355px
 
