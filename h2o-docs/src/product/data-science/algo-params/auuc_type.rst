@@ -9,23 +9,27 @@ Description
 
 Use this option to specify calculation of uplift and AUUC.
 
-To calculating AUUC aggregated statistics from binned prediction are used: 
+To be able to calculate AUUC for big data, the predictions are binned to histograms. Due to this feature the results should be different compare to exact computation.
 
-1. how many observations are in the treatment group (how many data rows in the bin have ``treatment_column`` label == 1)
-2. how many observations are in the control group (how many data rows int he bin have ``treatment_column`` label == 0)
-3. how many observations are in the treatment group and response to the offer (how many data rows in the bin have ``treatment_column`` label == 1 and ``response_column`` label == 1)
-4. how many observations are in the control group and response to the offer (how many data rows in the bin have ``treatment_column`` label == 0 and ``response_column`` label == 1)
+To define AUUC, binned predictions are sorted from the largest value to smallest. For every group cumulative sum of observations statistic is calculated and based on this statistics the uplift is defined. 
 
+The statistics of every group are:
+1. :math:`T` how many observations are in the treatment group (how many data rows in the bin have ``treatment_column`` label == 1) 
+2. :math:`C` how many observations are in the control group (how many data rows int he bin have ``treatment_column`` label == 0)
+3. :math:`TY1` how many observations are in the treatment group and response to the offer (how many data rows in the bin have ``treatment_column`` label == 1 and ``response_column`` label == 1)
+4. :math:`CY1` how many observations are in the control group and response to the offer (how many data rows in the bin have ``treatment_column`` label == 0 and ``response_column`` label == 1)
 
-In H2O Uplift DRF three ``auuc_type`` are supported:
-- Qini (``auuc_type="qini"``)
-- Lift (``auuc_type="lift"``)
-- Gain (``auuc_type="gain"``)
+You can set the AUUC type to be computed:
+
+- Qini (``auuc_type="qini"``) :math:`TY1 - CY1 * \frac{T}{C}`
+- Lift (``auuc_type="lift"``) :math:`\frac{TY1}{T} - \frac{CY1}{C}`
+- Gain (``auuc_type="gain"``) :math:`(\frac{TY1}{T} - \frac{CY1}{C}) * (T + C)` 
 
 Related Parameters
 ~~~~~~~~~~~~~~~~~~
 
 - `treatment_column <treatment_column.html>`__
+- `response_column <response_column.html>`__
 - `uplift_metric <uplift_metric.html>`__
 
 
@@ -71,8 +75,8 @@ Example
     # Eval performance:
     perf <- h2o.performance(uplift.model)
 
-    # Generate predictions on a validation set (if necessary):
-    predict <- h2o.predict(uplift.model, newdata = valid)
+    # Get AUUC
+    auuc <- perf.auuc()
 
    .. code-tab:: python
    
@@ -113,5 +117,5 @@ Example
     # Eval performance:
     perf = uplift_model.model_performance()
 
-    # Generate predictions on a validation set (if necessary):
-    pred = uplift_model.predict(valid)
+    # Get AUUC
+    auuc = perf.auuc()

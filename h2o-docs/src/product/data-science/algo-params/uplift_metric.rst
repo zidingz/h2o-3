@@ -9,17 +9,19 @@ Description
 
 Use this option to specify an uplift metric. 
 
-To calculating ``uplift_metric`` aggregated data from data histograms are used: 
+For calculating ``uplift_metric`` aggregated data (class distributions) from data histograms are used:
 
-1. how many observations are in the treatment group (how many data rows in the bin have ``treatment_column`` label == 1)
-2. how many observations are in the control group (how many data rows int he bin have ``treatment_column`` label == 0)
-3. how many observations are in the treatment group and response to the offer (how many data rows in the bin have ``treatment_column`` label == 1 and ``response_column`` label == 1)
-4. how many observations are in the control group and response to the offer (how many data rows in the bin have ``treatment_column`` label == 0 and ``response_column`` label == 1)
+The goal is maximize the differences between class distributions in treatment and control sets, so the splitting criteria are based on distribution divergences. Based on ``uplift_metric`` parameter the ditribution divergence is calculated. In H2O-3 three ``uplift_metric`` are supported:
 
-In H2O three ``uplift_metric`` (distribution divergences) are supported:
-- Kullback-Leibler divergence (``uplift_metric="kl"``)
-- The squared Euclidean distance (``uplift_metric="euclidean"``)
-- Chi-squared divergence (``uplift_metric="chi_squared"``)
+- Kullback-Leibler divergence (``uplift_metric="kl"``) - uses logaritmus to calculate divergence, asymetric widely used, tend to infinity values (if treatment or control group distributions contain zero values). :math:`KL(P, Q) = \sum_{i=0}^{N} p_i \log{\frac{p_i}{q_i}} }`
+- The squared Euclidean distance (``uplift_metric="euclidean"``) - symetric and stable distribution (no tend to infinity values). :math:`E(P, Q) = \sum_{i=0}^{N} \sqrt{p_i-q_i}`
+- Chi-squared divergence (``uplift_metric="chi_squared"``) - Euclidean divergence normalized by control group distribution. Asymetric and also tend to infinity values (if control group distribution contains zero values). :math:`\sqrt{X}(P, Q) = \sum_{i=0}^{N} \frac{\sqrt{p_i-q_i}}{q_i}`
+
+where:
+:math:`P` is treatment class distribution
+:math:`Q` is control class distribution
+
+In a tree node the result value for split is sum of metric(P, Q) and metric(1-P, 1-Q). For split gain value this result in the node is normalized using gini coefficient (Eclidean and ChiSquared option) or entropy (KL option) for each distribution before and after split.
 
 
 Related Parameters
@@ -62,9 +64,6 @@ Example
                                            max_depth=5,
                                            treatment_column="treatment",
                                            uplift_metric="KL",
-                                           gainslift_bins=10,
-                                           min_rows=10,
-                                           nbins=1000,
                                            seed=1234,
                                            auuc_type="qini")
     # Eval performance:
@@ -99,11 +98,8 @@ Example
                                                   max_depth=5,
                                                   treatment_column=treatment_column,
                                                   uplift_metric="KL",
-                                                  gainslift_bins=10,
-                                                  min_rows=10,
-                                                  nbins=1000,
                                                   seed=1234,
-                                                  auuc_type="gain")
+                                                  auuc_type="qini")
     uplift_model.train(x=predictors, 
                        y=response, 
                        training_frame=train, 
