@@ -100,6 +100,7 @@ Example
                                                   max_depth=5,
                                                   treatment_column=treatment_column,
                                                   uplift_metric="KL",
+                                                  min_rows=10,
                                                   seed=1234,
                                                   auuc_type="qini")
     uplift_model.train(x=predictors, 
