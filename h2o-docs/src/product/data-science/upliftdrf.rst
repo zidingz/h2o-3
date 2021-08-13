@@ -260,7 +260,7 @@ Below is a simple example showing how to build a Uplift Random Forest model.
     h2o.init()
 
     # Import the uplift dataset into H2O:
-    data <- h2o.importFile(locate("https://s3.amazonaws.com/h2o-public-test-data/smalldata/uplift/criteo_uplift_13k.csv"))
+    data <- h2o.importFile("https://s3.amazonaws.com/h2o-public-test-data/smalldata/uplift/criteo_uplift_13k.csv")
 
     # Set the predictors, response and treatment column:
     # set the predictors
@@ -285,6 +285,7 @@ Below is a simple example showing how to build a Uplift Random Forest model.
                                            treatment_column="treatment",
                                            uplift_metric="KL",
                                            gainslift_bins=10,
+                                           min_rows=10,
                                            seed=1234,
                                            auuc_type="qini")
     # Eval performance:
