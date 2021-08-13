@@ -323,6 +323,7 @@ Below is a simple example showing how to build a Uplift Random Forest model.
                                                   treatment_column=treatment_column,
                                                   uplift_metric="KL",
                                                   gainslift_bins=10,
+                                                  min_rows=10,
                                                   seed=1234,
                                                   auuc_type="qini")
     uplift_model.train(x=predictors, 
@@ -335,9 +336,6 @@ Below is a simple example showing how to build a Uplift Random Forest model.
 
     # Generate predictions on a validation set (if necessary):
     pred = uplift_model.predict(valid)
-
-    # Plot AUUC from model:
-    uplift_model.plot_auuc()
 
     # Plot AUUC from performance:
     perf.plot_auuc(metric="gain", plot=True)    
