@@ -39,9 +39,7 @@ class H2OInfogram(H2OEstimator):
                  training_frame=None,  # type: Optional[Union[None, str, H2OFrame]]
                  validation_frame=None,  # type: Optional[Union[None, str, H2OFrame]]
                  seed=-1,  # type: int
-                 keep_cross_validation_models=True,  # type: bool
-                 keep_cross_validation_predictions=False,  # type: bool
-                 keep_cross_validation_fold_assignment=False,  # type: bool
+                 nfolds=0,  # type: int
                  fold_assignment="auto",  # type: Literal["auto", "random", "modulo", "stratified"]
                  fold_column=None,  # type: Optional[str]
                  response_column=None,  # type: Optional[str]
@@ -86,15 +84,9 @@ class H2OInfogram(H2OEstimator):
         :param seed: Seed for pseudo random number generator (if applicable)
                Defaults to ``-1``.
         :type seed: int
-        :param keep_cross_validation_models: Whether to keep the cross-validation models.
-               Defaults to ``True``.
-        :type keep_cross_validation_models: bool
-        :param keep_cross_validation_predictions: Whether to keep the predictions of the cross-validation models.
-               Defaults to ``False``.
-        :type keep_cross_validation_predictions: bool
-        :param keep_cross_validation_fold_assignment: Whether to keep the cross-validation fold assignment.
-               Defaults to ``False``.
-        :type keep_cross_validation_fold_assignment: bool
+        :param nfolds: Number of folds for K-fold cross-validation (0 to disable or >= 2).
+               Defaults to ``0``.
+        :type nfolds: int
         :param fold_assignment: Cross-validation fold assignment scheme, if fold_column is not specified. The
                'Stratified' option will stratify the folds based on the response variable, for classification problems.
                Defaults to ``"auto"``.
@@ -217,9 +209,7 @@ class H2OInfogram(H2OEstimator):
         self.training_frame = training_frame
         self.validation_frame = validation_frame
         self.seed = seed
-        self.keep_cross_validation_models = keep_cross_validation_models
-        self.keep_cross_validation_predictions = keep_cross_validation_predictions
-        self.keep_cross_validation_fold_assignment = keep_cross_validation_fold_assignment
+        self.nfolds = nfolds
         self.fold_assignment = fold_assignment
         self.fold_column = fold_column
         self.response_column = response_column
@@ -293,46 +283,18 @@ class H2OInfogram(H2OEstimator):
         self._parms["seed"] = seed
 
     @property
-    def keep_cross_validation_models(self):
+    def nfolds(self):
         """
-        Whether to keep the cross-validation models.
+        Number of folds for K-fold cross-validation (0 to disable or >= 2).
 
-        Type: ``bool``, defaults to ``True``.
+        Type: ``int``, defaults to ``0``.
         """
-        return self._parms.get("keep_cross_validation_models")
+        return self._parms.get("nfolds")
 
-    @keep_cross_validation_models.setter
-    def keep_cross_validation_models(self, keep_cross_validation_models):
-        assert_is_type(keep_cross_validation_models, None, bool)
-        self._parms["keep_cross_validation_models"] = keep_cross_validation_models
-
-    @property
-    def keep_cross_validation_predictions(self):
-        """
-        Whether to keep the predictions of the cross-validation models.
-
-        Type: ``bool``, defaults to ``False``.
-        """
-        return self._parms.get("keep_cross_validation_predictions")
-
-    @keep_cross_validation_predictions.setter
-    def keep_cross_validation_predictions(self, keep_cross_validation_predictions):
-        assert_is_type(keep_cross_validation_predictions, None, bool)
-        self._parms["keep_cross_validation_predictions"] = keep_cross_validation_predictions
-
-    @property
-    def keep_cross_validation_fold_assignment(self):
-        """
-        Whether to keep the cross-validation fold assignment.
-
-        Type: ``bool``, defaults to ``False``.
-        """
-        return self._parms.get("keep_cross_validation_fold_assignment")
-
-    @keep_cross_validation_fold_assignment.setter
-    def keep_cross_validation_fold_assignment(self, keep_cross_validation_fold_assignment):
-        assert_is_type(keep_cross_validation_fold_assignment, None, bool)
-        self._parms["keep_cross_validation_fold_assignment"] = keep_cross_validation_fold_assignment
+    @nfolds.setter
+    def nfolds(self, nfolds):
+        assert_is_type(nfolds, None, int)
+        self._parms["nfolds"] = nfolds
 
     @property
     def fold_assignment(self):
@@ -786,13 +748,19 @@ class H2OInfogram(H2OEstimator):
         self._parms["compute_p_values"] = compute_p_values
 
 
-    def get_relevance_cmi_frame(self):
+    def get_relevance_cmi_frame(self, valid=False, cv=False):
         """
-        Get the relevance and CMI for all attributes returned by Infogram as an H2O Frame.
-        :param self: 
+        Retreive relevance, cmi information in an H2O frame for training dataset by default
+        :param valid: return infogram info on validation dataset if true
+        :param cv: return infogram info on cross-validation hold outs if true
         :return: H2OFrame
         """
-        keyString = self._model_json["output"]["relevance_cmi_key"]
+        keyString = self._model_json["output"]["relevance_cmi_key"] # get training dataset infogram by default
+        if valid:
+            keyString = self._model_json["output"]["relevance_cmi_key_valid"]
+        elif cv:
+            keyString =  self._model_json["output"]["relevance_cmi_key_cv"]
+
         if not (keyString == None):
             return h2o.get_frame(keyString)
         else:

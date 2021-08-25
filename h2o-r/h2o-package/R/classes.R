@@ -127,8 +127,11 @@ setMethod("h2o.keyof", signature(object = "Keyed"), function(object) {
 #' @slot algorithm string denoting the algorithm used to build infogram
 #' @slot admissible_features string array denoting all predictor names which pass the cmi and relelvance threshold
 #' @slot admissible_score is H2OFrame that contains columns, admissible, admissible_index, relevance, cmi, cmi_raw
+#' @slot admssible_score_valid is H2OFrame that contains columns, admissible, admissible_index, relevance, cmi, cmi_raw from validation frame
+#' @slot admissible_score_cv is H2OFrame that contains averages of columns, admissible, admissible_index, relevance, cmi, cmi_raw from cv hold-out
 #' @export
-setClass("H2OInfogramModel", slots = list(model_id='character', algorithm='character', admissible_features='character', admissible_score = "H2OFrame"))
+setClass("H2OInfogramModel", slots = list(model_id='character', algorithm='character', admissible_features='character', admissible_score = "H2OFrame", admissible_score_valid = "H2OFrame", admissible_score_cv = "H2OFrame"))
+
 #' Method on \code{H2OInfogramModel} object which in this case is to instantiate and initialize it
 #'
 #' @param .object A \code{H2OInfogramModel} object
@@ -145,6 +148,12 @@ setMethod("initialize", "H2OInfogramModel", function(.Object, model_id, ...) {
       .Object@admissible_features <-
         infogram_model@model$admissible_features
       .Object@admissible_score <- h2o.getFrame(infogram_model@model$relevance_cmi_key)
+      if (!is.null(infogram_model@model$relevance_cmi_key_valid)) {
+        .Object@admissible_score_valid <- h2o.getFrame(infogram_model@model$relevance_cmi_key_valid)
+      }
+      if (!is.null(infogram_model@model$relevance_cmi_key_cv)) {
+        .Object@admissible_score_cv <- h2o.getFrame(infogram_model@model$relevance_cmi_key_cv)
+      }
       return(.Object)
     } else {
       stop("Input must be H2OModel with algorithm == infogram.")

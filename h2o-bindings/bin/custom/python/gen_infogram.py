@@ -9,13 +9,19 @@ def update_param(name, param):
 
 
 def class_extensions():
-    def get_relevance_cmi_frame(self):
+    def get_relevance_cmi_frame(self, valid=False, cv=False):
         """
-        Get the relevance and CMI for all attributes returned by Infogram as an H2O Frame.
-        :param self: 
+        Retreive relevance, cmi information in an H2O frame for training dataset by default
+        :param valid: return infogram info on validation dataset if true
+        :param cv: return infogram info on cross-validation hold outs if true
         :return: H2OFrame
         """
-        keyString = self._model_json["output"]["relevance_cmi_key"]
+        keyString = self._model_json["output"]["relevance_cmi_key"] # get training dataset infogram by default
+        if valid:
+            keyString = self._model_json["output"]["relevance_cmi_key_valid"]
+        elif cv:
+            keyString =  self._model_json["output"]["relevance_cmi_key_cv"]
+
         if not (keyString == None):
             return h2o.get_frame(keyString)
         else:
