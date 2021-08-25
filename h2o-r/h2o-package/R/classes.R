@@ -127,16 +127,18 @@ setMethod("h2o.keyof", signature(object = "Keyed"), function(object) {
 #' @slot algorithm string denoting the algorithm used to build infogram
 #' @slot admissible_features string array denoting all predictor names which pass the cmi and relelvance threshold
 #' @slot admissible_score is H2OFrame that contains columns, admissible, admissible_index, relevance, cmi, cmi_raw
+#' @slot admssible_score_valid is H2OFrame that contains columns, admissible, admissible_index, relevance, cmi, cmi_raw from validation frame
+#' @slot admissible_score_xval is H2OFrame that contains averages of columns, admissible, admissible_index, relevance, cmi, cmi_raw from cv hold-out
 #' @aliases H2OInfogram
 #' @export
-setClass("H2OInfogramModel", slots = list(model_id='character', algorithm='character', admissible_features='character',
-                                          admissible_score = "H2OFrame", admissible_score_valid = "H2OFrame", 
-                                          admissible_score_cv = "H2OFrame"))
+setClass("H2OInfogramModel", slots = list(model_id='character', algorithm='character', admissible_features='character', admissible_features_valid='character',
+                                          admissible_features_xval='character', admissible_score="H2OFrame", admissible_score_valid="H2OFrame", 
+                                          admissible_score_xval="H2OFrame"))
 
-#' @rdname initialize
+#' Method on \code{H2OInfogramModel} object which in this case is to instantiate and initialize it
+#'
 #' @param .object A \code{H2OInfogramModel} object
 #' @param model_id string returned as part of every H2OModel
-#' @param ... parameters to algorithm, admissible_features, ... 
 #' @return A \code{H2OInfogramModel} object
 #' @export
 setMethod("initialize", "H2OInfogram", function(.Object, model_id, ...) {
@@ -146,10 +148,22 @@ setMethod("initialize", "H2OInfogram", function(.Object, model_id, ...) {
         (infogram_model@algorithm == 'infogram')) {
       .Object@model_id <- infogram_model@model_id
       .Object@algorithm <- infogram_model@algorithm
-      if (!is.null(infogram_model@model$admissible_features) && !is.list(infogram_model@model$admissible_features))
-      .Object@admissible_features <-
-        infogram_model@model$admissible_features
+      if(!is.null(infogram_model@model$admissible_features) && !is.list(infogram_model@model$admissible_features)) {
+      .Object@admissible_features <- infogram_model@model$admissible_features
+      }
       .Object@admissible_score <- h2o.getFrame(infogram_model@model$relevance_cmi_key)
+      if(!is.null(infogram_model@model$admissible_features_valid) && !is.list(infogram_model@model$admissible_features_valid)) {
+        .Object@admissible_features_valid <- infogram_model@model$admissible_features_valid
+      }
+      if (!is.null(infogram_model@model$admissible_features_xval) && !is.list(infogram_model@model$admissible_features_xval)) {
+        .Object@admissible_features_xval <- infogram_model@model$admissible_features_xval
+      }
+      if (!is.null(infogram_model@model$relevance_cmi_key_valid)) {
+        .Object@admissible_score_valid <- h2o.getFrame(infogram_model@model$relevance_cmi_key_valid)
+      }
+      if (!is.null(infogram_model@model$relevance_cmi_key_xval)) {
+        .Object@admissible_score_xval <- h2o.getFrame(infogram_model@model$relevance_cmi_key_xval)
+      }
       return(.Object)
     } else {
       stop("Input must be H2OModel with algorithm == infogram.")
