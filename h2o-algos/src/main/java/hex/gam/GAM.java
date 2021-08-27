@@ -55,6 +55,7 @@ public class GAM extends ModelBuilder<GAMModel, GAMModel.GAMParameters, GAMModel
   public double[] _penaltyScale;
   private boolean _cvOn = false;
   private Frame _origTrain = null;
+  IcedHashSet<Key<Frame>> _validKeys;
   
   @Override
   public ModelCategory[] can_build() {
@@ -105,6 +106,7 @@ public class GAM extends ModelBuilder<GAMModel, GAMModel.GAMParameters, GAMModel
     if (error_count() > 0) {
       throw H2OModelBuilderIllegalArgumentException.makeFromBuilder(GAM.this);
     }
+    _validKeys = new IcedHashSet<>();
     super.computeCrossValidation();
   }
 
@@ -123,6 +125,7 @@ public class GAM extends ModelBuilder<GAMModel, GAMModel.GAMParameters, GAMModel
     }
     _cv_alpha = new double[]{best_alpha};
     _cv_lambda = new double[]{best_lambda};
+    _cvOn=false;
   }
   
   /***
@@ -687,7 +690,7 @@ public class GAM extends ModelBuilder<GAMModel, GAMModel.GAMParameters, GAMModel
     public final void buildModel(Frame newTFrame, Frame newValidFrame) {
       GAMModel model = null;
       DataInfo dinfo = null;
-      final IcedHashSet<Key<Frame>> validKeys = new IcedHashSet<>();
+      
       try {
         _job.update(0, "Adding GAM columns to training dataset...");
         dinfo = new DataInfo(_train.clone(), _valid, 1, _parms._use_all_factor_levels 
@@ -735,10 +738,10 @@ public class GAM extends ModelBuilder<GAMModel, GAMModel.GAMParameters, GAMModel
           if (dinfo != null)
             dinfo.remove();
 
-          if (newValidFrame != null && validKeys != null) {
+          if (newValidFrame != null && _validKeys != null) {
             keepFrameKeys(keep, newValidFrame._key);  // save valid frame keys for scoring later
-            validKeys.addIfAbsent(newValidFrame._key);   // save valid frame keys from folds to remove later
-            model._validKeys = validKeys;  // move valid keys here to model._validKeys to be removed later
+            _validKeys.addIfAbsent(newValidFrame._key);   // save valid frame keys from folds to remove later
+            model._validKeys = _validKeys;  // move valid keys here to model._validKeys to be removed later
           }
           Scope.untrack(keep.toArray(new Key[keep.size()]));
         } finally {
