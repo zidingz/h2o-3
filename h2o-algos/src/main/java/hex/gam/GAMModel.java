@@ -41,6 +41,7 @@ public class GAMModel extends Model<GAMModel, GAMModel.GAMParameters, GAMModel.G
   public long _nullDOF;
   public int _rank;
   public IcedHashSet<Key<Frame>> _validKeys = null;
+  public boolean _cvOn;
 
   @Override public String[] makeScoringNames() {
     String[] names = super.makeScoringNames();
@@ -841,7 +842,7 @@ public class GAMModel extends Model<GAMModel, GAMModel.GAMParameters, GAMModel.G
   protected Futures remove_impl(Futures fs, boolean cascade) {
     super.remove_impl(fs, cascade);
     Keyed.remove(_output._gamTransformedTrainCenter, fs, true);
-    if (_validKeys != null)
+    if (_validKeys != null && !_cvOn) // only remove after all fold model buildings/scorings are done
       for (Key oneKey:_validKeys) {
           Keyed.remove(oneKey, fs, true);
       }
