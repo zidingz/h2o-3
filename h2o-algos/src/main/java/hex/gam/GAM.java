@@ -123,6 +123,7 @@ public class GAM extends ModelBuilder<GAMModel, GAMModel.GAMParameters, GAMModel
     }
     _cv_alpha = new double[]{best_alpha};
     _cv_lambda = new double[]{best_lambda};
+    _cvOn = false;  // finished building fold models, build main model next
   }
   
   /***
@@ -739,6 +740,7 @@ public class GAM extends ModelBuilder<GAMModel, GAMModel.GAMParameters, GAMModel
             keepFrameKeys(keep, newValidFrame._key);  // save valid frame keys for scoring later
             validKeys.addIfAbsent(newValidFrame._key);   // save valid frame keys from folds to remove later
             model._validKeys = validKeys;  // move valid keys here to model._validKeys to be removed later
+            model._cvOn = _cvOn;
           }
           Scope.untrack(keep.toArray(new Key[keep.size()]));
         } finally {
