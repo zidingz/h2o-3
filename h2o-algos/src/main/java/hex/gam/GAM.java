@@ -732,7 +732,7 @@ public class GAM extends ModelBuilder<GAMModel, GAMModel.GAMParameters, GAMModel
             if (_parms._keep_gam_cols) {
               keepFrameKeys(keep, newTFrame._key);
             } else {
-              DKV.remove(newTFrame._key);
+              ;//DKV.remove(newTFrame._key);
             }
           }
           if (dinfo != null)

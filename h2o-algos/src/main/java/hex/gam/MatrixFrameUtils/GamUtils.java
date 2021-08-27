@@ -242,8 +242,8 @@ public class GamUtils {
 
   // grad all predictors to build a smoother
   public static Frame prepareGamVec(int gam_column_index, GAMParameters parms, Frame fr) {
-    final Vec weights_column = (parms._weights_column == null) ? Scope.track(Vec.makeOne(fr.numRows()))
-            : Scope.track(fr.vec(parms._weights_column));
+    final Vec weights_column = (parms._weights_column == null) ? Vec.makeOne(fr.numRows()) 
+            : fr.vec(parms._weights_column);
     final Frame predictVec = new Frame();
     int numPredictors = parms._gam_columns_sorted[gam_column_index].length;
     for (int colInd = 0; colInd < numPredictors; colInd++)
@@ -299,9 +299,9 @@ public class GamUtils {
     Vec responseVec = train.remove(parms._response_column);
     Vec weightsVec = null;
     if (parms._weights_column != null) // move weight vector to be the last vector before response variable
-      weightsVec = Scope.track(train.remove(parms._weights_column));
+      weightsVec = train.remove(parms._weights_column);
     for (int colIdx = 0; colIdx < parms._gam_columns_sorted.length; colIdx++) {  // append the augmented columns to _train
-      Frame gamFrame = Scope.track(gamFrameKeysCenter[colIdx].get());
+      Frame gamFrame = gamFrameKeysCenter[colIdx].get();
       train.add(gamFrame.names(), gamFrame.removeAll());
       train.remove(parms._gam_columns_sorted[colIdx]);
     }
@@ -315,7 +315,7 @@ public class GamUtils {
   public static Frame concateGamVecs(Key<Frame>[] gamFrameKeysCenter) {
     Frame gamVecs =  new Frame(Key.make());
     for (int index = 0; index < gamFrameKeysCenter.length; index++) {
-      Frame tempCols = Scope.track(gamFrameKeysCenter[index].get());
+      Frame tempCols = gamFrameKeysCenter[index].get();
       gamVecs.add(tempCols.names(), tempCols.removeAll());
     }
     return gamVecs;

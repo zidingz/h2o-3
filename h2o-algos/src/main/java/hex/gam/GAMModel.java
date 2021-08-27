@@ -475,7 +475,7 @@ public class GAMModel extends Model<GAMModel, GAMModel.GAMParameters, GAMModel.G
     if (ArrayUtils.contains(testNames, parms._response_column))
       respV = adptedF.remove(parms._response_column);
     adptedF.add(csAugmentedColumns.names(), csAugmentedColumns.removeAll());
-    Scope.track(csAugmentedColumns);
+    //Scope.track(csAugmentedColumns);
     
     if (weightV != null)
       adptedF.add(parms._weights_column, weightV);
@@ -506,7 +506,7 @@ public class GAMModel extends Model<GAMModel, GAMModel.GAMParameters, GAMModel.G
     if (ArrayUtils.contains(valid.names(), parms._response_column))
       respV = valid.remove(parms._response_column);
     valid.add(csAugmentedColumns.names(), csAugmentedColumns.removeAll());
-    Scope.track(csAugmentedColumns);
+    //Scope.track(csAugmentedColumns);
 
     if (weightV != null)
       valid.add(parms._weights_column, weightV);
