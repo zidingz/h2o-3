@@ -41,7 +41,6 @@ class H2OTwoDimTable(object):
         self._col_types = col_types
         self._cell_values = cell_values or self._parse_values(raw_cell_values, col_types)
 
-
     @staticmethod
     def make(keyvals):
         """
@@ -62,24 +61,20 @@ class H2OTwoDimTable(object):
             if key == "data": kwargs["raw_cell_values"] = value
         return H2OTwoDimTable(**kwargs)
 
-
     @property
     def cell_values(self):
         """The contents of the table, as a list of rows."""
         return self._cell_values
-
 
     @property
     def col_header(self):
         """Array of column names."""
         return self._col_header
 
-
     @property
     def col_types(self):
         """Array of column types."""
         return self._col_types
-
 
     def as_data_frame(self):
         """Convert to a python 'data frame'."""
@@ -88,7 +83,6 @@ class H2OTwoDimTable(object):
             pandas.options.display.max_colwidth = 70
             return pandas.DataFrame(self._cell_values, columns=self._col_header)
         return self
-
 
     def show(self, header=True):
         """Print the contents of this table."""
@@ -122,10 +116,14 @@ class H2OTwoDimTable(object):
             return table, nr, False
 
     def __repr__(self):
-        # FIXME: should return a string rather than printing it
+        return repr(vars(self))
+    
+    def __str__(self):
         self.show()
         return ""
-
+    
+    def _repr_pretty_(self, p, cycle):  # used by IPython
+        self.show()
 
     def _parse_values(self, values, types):
         if self._col_header[0] is None:
@@ -143,7 +141,6 @@ class H2OTwoDimTable(object):
                 else:  # string?
                     continue
         return list(zip(*values))  # transpose the values! <3 splat ops
-
 
     def __getitem__(self, item):
         if is_type(item, int, str):
@@ -169,7 +166,6 @@ class H2OTwoDimTable(object):
             return [self[i] for i in item]
         else:
             raise TypeError('can not support getting item for ' + str(item))
-
 
     def __setitem__(self, key, value):
         # This is not tested, and probably not used anywhere... That's why it's so horrible.
