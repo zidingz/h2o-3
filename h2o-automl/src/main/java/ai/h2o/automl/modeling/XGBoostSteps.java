@@ -207,7 +207,7 @@ public class XGBoostSteps extends ModelingSteps {
                     XGBoostModel bestXGB = getBestXGB();
                     aml().eventLog().info(EventLogEntry.Stage.ModelSelection, "Retraining best XGBoost with learning rate annealing: "+bestXGB._key);
                     XGBoostParameters xgBoostParameters = (XGBoostParameters) bestXGB._parms.clone();
-                    xgBoostParameters._ntrees = 10000; // reset ntrees (we'll need more for this fine tuning)
+                    xgBoostParameters._ntrees = 10000; // reset ntrees (we'll need more for this fine-tuning)
                     xgBoostParameters._max_runtime_secs = 0; // reset max runtime
                     xgBoostParameters._learn_rate_annealing = 0.99;
                     initTimeConstraints(xgBoostParameters, maxRuntimeSecs);
@@ -241,7 +241,7 @@ public class XGBoostSteps extends ModelingSteps {
                     aml().eventLog().info(EventLogEntry.Stage.ModelSelection, "Applying learning rate search on best XGBoost: "+bestXGB._key);
                     XGBoostParameters xgBoostParameters = (XGBoostParameters) bestXGB._parms.clone();
                     XGBoostParameters defaults = new XGBoostParameters();
-                    xgBoostParameters._ntrees = 10000; // reset ntrees (we'll need more for this fine tuning)
+                    xgBoostParameters._ntrees = 10000; // reset ntrees (we'll need more for this fine-tuning)
                     xgBoostParameters._max_runtime_secs = 0; // reset max runtime
                     initTimeConstraints(xgBoostParameters, 0); // ensure we have a max runtime per model in the grid
                     setStoppingCriteria(xgBoostParameters, defaults); // keep the same seed as the bestXGB

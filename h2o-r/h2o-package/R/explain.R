@@ -33,7 +33,8 @@ with_no_h2o_progress <- function(expr) {
 #' @param treat_xrt_as_algorithm Try to find out if a model is XRT and if so report it as xrt
 #' @return algorithm name
 .get_algorithm <- function(model_or_model_id, treat_xrt_as_algorithm = FALSE) {
-  known_algos <- c("deeplearning", "drf", "glm", "gam", "gbm", "naivebayes", "stackedensemble", "rulefit", "xgboost", "xrt")
+  known_algos <- c("deeplearning", "drf", "glm", "gam", "gbm", "naivebayes", "stackedensemble", "rulefit", "anovaglm", 
+                   "xgboost", "xrt")
   if (is.character(model_or_model_id)) {
     algorithm <- sub("^(DeepLearning|DRF|GAM|GBM|GLM|NaiveBayes|StackedEnsemble|RuleFit|XGBoost|XRT)_.*",
                      "\\L\\1", model_or_model_id, perl = TRUE)
@@ -2769,7 +2770,7 @@ h2o.learning_curve_plot <- function(model,
 #' are visual (ggplot plots).  These plots can also be created by individual utility functions 
 #' as well.
 #'
-#' @param object One of the following: an H2O model, a list of H2O models, an H2OAutoML object or 
+#' @param object One of the following: a supervised H2O model, a list of supervised H2O models, an H2OAutoML object or
 #'               an H2OAutoML Leaderboard slice.
 #' @param newdata An H2OFrame.
 #' @param columns A vector of column names or column indices to create plots with. If specified
@@ -3156,7 +3157,7 @@ h2o.explain <- function(object,
 #' are visual (ggplot plots).  These plots can also be created by individual utility functions 
 #' as well.
 #' 
-#' @param object One of the following: an H2O model, a list of H2O models, an H2OAutoML object 
+#' @param object One of the following: a supervised H2O model, a list of supervised H2O models, an H2OAutoML object
 #'               or an H2OAutoML Leaderboard slice.
 #' @param newdata An H2OFrame.
 #' @param row_index A row index of the instance to explain.

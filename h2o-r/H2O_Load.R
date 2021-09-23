@@ -16,7 +16,8 @@ function() {
               "import.R", "frame.R", "kvstore.R", "grid.R", "generic.R",
               "parse.R", "export.R", "models.R", "edicts.R", "coxph.R", "coxphutils.R", "glm.R", "gam.R", "glrm.R", "pca.R", "kmeans.R",
               "gbm.R", "deeplearning.R", "naivebayes.R", "randomforest.R", "svd.R", "locate.R", "predict.R", "rulefit.R",
-              "isolationforest.R", "psvm.R", "tf-idf.R", "permutation_varimp.R", "extendedisolationforest.R", "upliftrandomforest.R")
+              "isolationforest.R", "psvm.R", "tf-idf.R", "permutation_varimp.R", "extendedisolationforest.R", "anovaglm.R", "upliftrandomforest.R")
+>>>>>>> bdf64471f7777c8f2ff50b7806ab9bce6aeeba91
   require(jsonlite); require(RCurl)
   invisible(lapply(to_src,function(x){source(paste(FULL.PATH, x, sep = ""))}))
 }
