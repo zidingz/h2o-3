@@ -6,6 +6,7 @@ import hex.glm.GLM;
 import hex.glm.GLMModel;
 import water.*;
 import water.fvec.Frame;
+import water.fvec.Vec;
 import water.udf.CFuncRef;
 import water.util.TwoDimTable;
 
@@ -39,6 +40,33 @@ public class MaxRGLMModel extends Model<MaxRGLMModel, MaxRGLMModel.MaxRGLMParame
     public Frame score(Frame fr, String destination_key, Job j, boolean computeMetrics, CFuncRef customMetricFunc) {
         throw new UnsupportedOperationException("AnovaGLM does not support scoring on data.  It only provide " +
                 "information on predictor relevance");
+    }
+    
+    public void generateResultFrame(String[][] bestModelPredictors,  double[] bestR2Values) {
+        int numRows = bestR2Values.length;
+        String[] modelNames = new String[numRows];
+        String[] predNames = new String[numRows];
+        for (int index=0; index<numRows; index++) {
+            int numPred = index+1;
+            modelNames[index] = "best "+numPred+" predictor(s) model";
+            predNames[index] = String.join(", ", bestModelPredictors[index]);
+        }
+        Vec.VectorGroup vg = Vec.VectorGroup.VG_LEN1;
+        Vec modNames = Vec.makeVec(modelNames, vg.addVec());
+        Vec r2 = Vec.makeVec(bestR2Values, vg.addVec());
+        Vec predN = Vec.makeVec(predNames, vg.addVec());
+        String[] colNames = new String[]{"model_name", "best_r2_value", "predictor_names"};
+        Frame resultFrame = new Frame(Key.<Frame>make(), colNames, new Vec[]{modNames, r2, predN});
+        DKV.put(resultFrame);
+        _output._resultFrameKey = resultFrame._key;
+        _output._result_frame_key = _output._resultFrameKey.toString();
+    }
+    
+    public Frame resultFrame() {
+        if (_output._resultFrameKey != null)
+            return DKV.getGet(_output._resultFrameKey);
+        else
+            return null;
     }
     
     public static class MaxRGLMParameters extends Model.Parameters {
@@ -115,6 +143,8 @@ public class MaxRGLMModel extends Model<MaxRGLMModel, MaxRGLMModel.MaxRGLMParame
         DataInfo _dinfo;
         String[][] _best_model_predictors; // store for each predictor number, the best model predictors
         double[] _best_r2_values;  // store the best R2 values of the best models with fix number of predictors
+        public String _result_frame_key;
+        public Key<Frame> _resultFrameKey;
         
         public MaxRGLMModelOutput(MaxRGLM b, DataInfo dinfo) {
             super(b, dinfo._adaptedFrame);

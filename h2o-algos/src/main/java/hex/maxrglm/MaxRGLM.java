@@ -5,10 +5,17 @@ import hex.glm.GLM;
 import hex.glm.GLMModel;
 import water.H2O;
 import water.Key;
+import water.Scope;
 import water.api.schemas3.FrameV3;
 import water.exceptions.H2OModelBuilderIllegalArgumentException;
 import water.fvec.Frame;
+import water.fvec.Vec;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static hex.anovaglm.ANOVAGLMUtils.removeFromDKV;
+import static hex.gam.MatrixFrameUtils.GamUtils.keepFrameKeys;
 import static hex.genmodel.utils.MathUtils.combinatorial;
 import static hex.glm.GLMModel.GLMParameters.Family.AUTO;
 import static hex.glm.GLMModel.GLMParameters.Family.gaussian;
@@ -145,11 +152,15 @@ public class MaxRGLM extends ModelBuilder<MaxRGLMModel, MaxRGLMModel.MaxRGLMPara
                     removeTrainingFrames(trainingFrames);
                     _job.update(predNum, "finished building all models with "+predNum+" predictors.");
                 }
+                model.generateResultFrame(_bestModelPredictors, _bestR2Values);
                 _job.update(0, "Completed GLM model building.  Extracting results now.");
                 model.update(_job);
                 // copy best R2 and best predictors to model._output
                 model._output.summarizeRunResult(_bestModelPredictors, _bestR2Values);
             } finally {
+                final List<Key<Vec>> keep = new ArrayList<>();
+                keepFrameKeys(keep, model._output._resultFrameKey);
+                Scope.untrack(keep.toArray(new Key[keep.size()]));
                 model.update(_job);
                 model.unlock(_job);
             }

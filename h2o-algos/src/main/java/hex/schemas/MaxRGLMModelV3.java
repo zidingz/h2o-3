@@ -17,6 +17,10 @@ public class MaxRGLMModelV3 extends ModelSchemaV3<MaxRGLMModel, MaxRGLMModelV3, 
         
         @API(help="R2 values of all possible predictor subsets")
         double[] best_r2_values;  // store the best R2 values of the best models with fix number of predictors
+
+        @API(help="Key of result frame containing best 1-predictor model R2 value, model_id and others")
+        String result_frame_key;  // store the best R2 values of the best models with fix number of predictors
+        
         
         @Override
         public MaxRGLMModelOutputV3 fillFromImpl(MaxRGLMModel.MaxRGLMModelOutput impl) {

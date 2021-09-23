@@ -143,4 +143,31 @@ public class MaxRGLMBasicTests {
         }
     }
 
+    @Test
+    public void testProstateResultFrame() {
+        Scope.enter();
+        try {
+            double tol = 1e-6;
+            Frame trainF = parseTestFile("smalldata/logreg/prostate.csv");
+            Scope.track(trainF);
+            MaxRGLMModel.MaxRGLMParameters parms = new MaxRGLMModel.MaxRGLMParameters();
+            parms._response_column = "AGE";
+            parms._family = gaussian;
+            parms._ignored_columns = new String[]{"ID"};
+            parms._max_predictor_number=trainF.numCols()-3;
+            parms._train = trainF._key;
+            MaxRGLMModel model = new MaxRGLM(parms).trainModel().get();
+            Scope.track_generic(model); // best one predictor model
+            Frame resultFrame = model.resultFrame();
+            Scope.track(resultFrame);
+            // check with model summary r2 values
+            double[] bestR2 = model._output._best_r2_values;
+            int numModels = bestR2.length;
+            for (int index=0; index<numModels; index++) 
+                assertTrue(Math.abs(bestR2[index]-resultFrame.vec(1).at(index)) < tol);
+        } finally {
+            Scope.exit();
+        }
+    }
+
 }
