@@ -8,7 +8,6 @@ import water.*;
 import water.fvec.Frame;
 import water.fvec.Vec;
 import water.util.ArrayUtils;
-import water.util.AtomicUtils;
 import water.util.RandomUtils;
 
 import java.util.Arrays;
@@ -80,6 +79,46 @@ public final class DHistogram extends Iced<DHistogram> {
   protected final Divergence _upliftMetric;
                                   
   private final Distribution _dist;
+  public double w(int i){  return _vals[_vals_dim*i+0];}
+  public double wY(int i){ return _vals[_vals_dim*i+1];}
+  public double wYY(int i){return _vals[_vals_dim*i+2];}
+
+  public double wNA()   { return _vals[_vals_dim*_nbin+0]; }
+  public double wYNA()  { return _vals[_vals_dim*_nbin+1]; }
+  public double wYYNA() { return _vals[_vals_dim*_nbin+2]; }
+
+  /**
+   * Squared Error for NA bucket and prediction value _pred1
+   * @return se
+   */
+  public double seP1NA() { return _vals[_vals_dim*_nbin+3]; }
+  /**
+   * Squared Error for NA bucket and prediction value _pred2
+   * @return se
+   */
+  public double seP2NA() { return _vals[_vals_dim*_nbin+4]; }
+  public double denNA() { return _vals[_vals_dim*_nbin+5]; }
+  public double nomNA() { return _vals[_vals_dim*_nbin+6]; }
+  public double numTreatmentNA() { return _valsUplift[_valsDimUplift*_nbin]; }
+  public double respTreatmentNA() { return _valsUplift[_valsDimUplift*_nbin+1]; }
+  public double numControlNA() { return _valsUplift[_valsDimUplift*_nbin+2]; }
+  public double respControlNA() { return _valsUplift[_valsDimUplift*_nbin+3]; }
+  
+  final boolean hasPreds() { 
+    return _vals_dim >= 5;
+  } 
+
+  final boolean hasDenominator() {
+    return _vals_dim >= 6;
+  }
+
+  final boolean hasNominator() {
+    return _vals_dim == 7;
+  }
+
+  final boolean useUplift(){
+    return _useUplift;
+  }
 
   protected double  _min2, _maxIn; // Min/Max, _maxIn is Inclusive.
   public SharedTreeModel.SharedTreeParameters.HistogramType _histoType; //whether ot use random split points
@@ -90,7 +129,9 @@ public final class DHistogram extends Iced<DHistogram> {
   public final long _seed;
   public transient boolean _hasQuantiles;
   public Key _globalQuantilesKey; //key under which original top-level quantiles are stored;
-  
+
+
+
   /**
    * Split direction for missing values.
    *
@@ -129,7 +170,6 @@ public final class DHistogram extends Iced<DHistogram> {
       super("column=" + name + " leads to invalid histogram(check numeric range) -> [max=" + maxEx + ", min = " + min + "], step= " + step + ", xbin= " + xbins);
     }
   }
-  
   DHistogram(String name, final int nbins, int nbins_cats, byte isInt, double min, double maxEx, boolean initNA,
              double minSplitImprovement, SharedTreeModel.SharedTreeParameters.HistogramType histogramType, long seed, Key globalQuantilesKey,
              Constraints cs, boolean checkFloatSplits) {
@@ -141,12 +181,14 @@ public final class DHistogram extends Iced<DHistogram> {
       _pred2 = cs._max;
       if (!cs.needsGammaDenom() && !cs.needsGammaNom()) {
         _vals_dim = Double.isNaN(_pred1) && Double.isNaN(_pred2) ? 3 : 5;
+        _dist = cs._dist; 
       } else if (!cs.needsGammaNom()) {
         _vals_dim = 6;
+        _dist = cs._dist;
       } else {
         _vals_dim = 7;
+        _dist = cs._dist;
       }
-      _dist = cs._dist;
     } else {
       _pred1 = Double.NaN;
       _pred2 = Double.NaN;
@@ -269,11 +311,7 @@ public final class DHistogram extends Iced<DHistogram> {
     // Do not allocate the big arrays here; wait for scoreCols to pick which cols will be used.
   }
 
-  /**
-   * Interpolate d to find bin#
-   * @param col_data column data
-   * @return index of the bin
-   */
+  // Interpolate d to find bin#
   public int bin(final double col_data) {
     if(Double.isNaN(col_data)) return _nbin; // NA bucket
     if (Double.isInfinite(col_data)) // Put infinity to most left/right bin
@@ -304,34 +342,25 @@ public final class DHistogram extends Iced<DHistogram> {
         }
       }
     }
-    if (idx1 == _nbin)
+    if (idx1 == _nbin) 
       idx1--; // Round-off error allows idx1 to hit upper bound, so truncate
     assert 0 <= idx1 && idx1 < _nbin : idx1 + " " + _nbin;
     return idx1;
   }
-    
+  
   
   public double binAt( int b ) {
     if (_hasQuantiles) return _splitPts[b];
     return _min + (_splitPts == null ? b : _splitPts[b]) / _step;
   }
 
-  /**
-   * Get number of bins excluding the NA bin
-   * @return number of bins excluding the NA bin
-   */
+  // number of bins excluding the NA bin
   public int nbins() { return _nbin; }
-
-  /**
-   * Get actual number of bins (possibly including NA bin)
-   * @return actual number of bins (possibly including NA bin)
-   */
+  // actual number of bins (possibly including NA bin)
   public int actNBins() {
     return nbins() + (hasNABin() ? 1 : 0);
   }
-  
   public double bins(int b) { return w(b); }
-
 
   public boolean hasNABin() {
     if (_vals == null)
@@ -340,23 +369,9 @@ public final class DHistogram extends Iced<DHistogram> {
       return wNA() > 0;
   }
   
-  /**
-   * Initialize DHistogram without vals
-   * Big allocation of arrays
-   */
+  // Big allocation of arrays
   public void init() { init(null, null);}
-
-  /**
-   * Initialize DHistogram without vals
-   * Big allocation of arrays
-   */
   public void init(double[] vals) { init(vals, null);}
-
-  /**
-   * Initialize DHistogram with vals
-   * Big allocation of arrays
-   * @param vals initialization values
-   */
   public void init(final double[] vals, double[] valsUplift) {
     assert _vals == null;
     if (_histoType==SharedTreeModel.SharedTreeParameters.HistogramType.Random) {
@@ -406,7 +421,9 @@ public final class DHistogram extends Iced<DHistogram> {
     }
     // otherwise AUTO/UniformAdaptive
     _vals = vals == null ? MemoryManager.malloc8d(_vals_dim * _nbin + _vals_dim) : vals;
-    _valsUplift = valsUplift == null ? MemoryManager.malloc8d(_valsDimUplift * _nbin + _valsDimUplift) : valsUplift;
+    if(useUplift()) {
+      _valsUplift = valsUplift == null ? MemoryManager.malloc8d(_valsDimUplift * _nbin + _valsDimUplift) : valsUplift;
+    }
     // this always holds: _vals != null
     assert _nbin > 0;
     if (_checkFloatSplits) {
@@ -417,64 +434,8 @@ public final class DHistogram extends Iced<DHistogram> {
     }
   }
   
-
-  public double w(int i){  return _vals[_vals_dim*i+0];}
-  
-  public double wY(int i){ return _vals[_vals_dim*i+1];}
-  
-  public double wYY(int i){return _vals[_vals_dim*i+2];}
-
-  public void addWAtomic(int i, double wDelta) {  // used by AutoML
-    AtomicUtils.DoubleArray.add(_vals, _vals_dim*i+0, wDelta);
-  }
-  
-  public double wNA()   { return _vals[_vals_dim*_nbin+0]; }
-  
-  public double wYNA()  { return _vals[_vals_dim*_nbin+1]; }
-  
-  public double wYYNA() { return _vals[_vals_dim*_nbin+2]; }
-
-  /**
-   * Squared Error for NA bucket and prediction value _pred1
-   * @return se
-   */
-  public double seP1NA() { return _vals[_vals_dim*_nbin+3]; }
-  
-  /**
-   * Squared Error for NA bucket and prediction value _pred2
-   * @return se
-   */
-  public double seP2NA() { return _vals[_vals_dim*_nbin+4]; }
-  
-  public double denNA() { return _vals[_vals_dim*_nbin+5]; }
-  
-  public double nomNA() { return _vals[_vals_dim*_nbin+6]; }
-
-  public double numTreatmentNA() { return _valsUplift[_valsDimUplift*_nbin]; }
-  
-  public double respTreatmentNA() { return _valsUplift[_valsDimUplift*_nbin+1]; }
-  
-  public double numControlNA() { return _valsUplift[_valsDimUplift*_nbin+2]; }
-
-  public double respControlNA() { return _valsUplift[_valsDimUplift*_nbin+3]; }
-  
-
-  final boolean hasPreds() {
-    return _vals_dim >= 5;
-  }
-
-  final boolean hasDenominator() {
-    return _vals_dim >= 6;
-  }
-
-  final boolean hasNominator() {
-    return _vals_dim == 7;
-  }
-  
-  final boolean useUplift(){
-    return _useUplift;
-  }
-  
+  // Merge two equal histograms together.  Done in a F/J reduce, so no
+  // synchronization needed.
   public void add( DHistogram dsh ) {
     assert (_vals == null || dsh._vals == null) || (_isInt == dsh._isInt && _nbin == dsh._nbin && _step == dsh._step &&
       _min == dsh._min && _maxEx == dsh._maxEx);
@@ -490,13 +451,10 @@ public final class DHistogram extends Iced<DHistogram> {
   }
 
   // Inclusive min & max
-  public double findMin() { return _min2 ; }
-  
+  public double find_min  () { return _min2 ; }
   public double find_maxIn() { return _maxIn; }
-  
   // Exclusive max
   public double find_maxEx() { return find_maxEx(_maxIn,_isInt); }
-  
   public static double find_maxEx(double maxIn, int isInt ) {
     double ulp = Math.ulp(maxIn);
     if( isInt > 0 && 1 > ulp ) ulp = 1;
@@ -519,7 +477,6 @@ public final class DHistogram extends Iced<DHistogram> {
    */
   public static DHistogram[] initialHist(Frame fr, int ncols, int nbins, DHistogram hs[], long seed, SharedTreeModel.SharedTreeParameters parms, Key[] globalQuantilesKey, 
                                          Constraints cs, boolean checkFloatSplits) {
-
     Vec vecs[] = fr.vecs();
     for( int c=0; c<ncols; c++ ) {
       Vec v = vecs[c];
@@ -555,10 +512,7 @@ public final class DHistogram extends Iced<DHistogram> {
             parms._min_split_improvement, parms._histogram_type, seed, globalQuantilesKey, cs, checkFloatSplits, useUplift, upliftMetricType);
   }
 
-  /**
-   * Pretty-print a histogram
-   * @return
-   */
+  // Pretty-print a histogram
   @Override public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append(_name).append(":").append(_min).append("-").append(_maxEx).append(" step=" + (1 / _step) + " nbins=" + nbins() + " actNBins=" + actNBins() + " isInt=" + _isInt);
@@ -577,16 +531,16 @@ public final class DHistogram extends Iced<DHistogram> {
   }
 
   /**
-   * Compute the sample variance within a given bin
+   * compute the sample variance within a given bin
    * @param b bin id
    * @return sample variance (>= 0)
    */
-  public double var(int b) {
+  public double var (int b) {
     double n = w(b);
     if( n<=1 ) return 0;
     return Math.max(0, (wYY(b) - wY(b)* wY(b)/n)/(n-1)); //not strictly consistent with what is done elsewhere (use n instead of n-1 to get there)
   }
-  
+
   /**
    * Update counts in appropriate bins. Not thread safe, assumed to have private copy.
    * @param ws observation weights
@@ -618,7 +572,7 @@ public final class DHistogram extends Iced<DHistogram> {
       double wy = weight * y;
       double wyy = wy * y;
       int b = bin(col_data);
-      final int binDimStart = _vals_dim * b;
+      final int binDimStart = _vals_dim*b;
       _vals[binDimStart + 0] += weight;
       _vals[binDimStart + 1] += wy;
       _vals[binDimStart + 2] += wyy;
@@ -661,7 +615,7 @@ public final class DHistogram extends Iced<DHistogram> {
       _vals[i+2] = (float)_vals[i+2];
     }
   }
-  
+
   static double[] makeRandomSplitPoints(int nbin, Random rng) {
     final double[] splitPts = new double[nbin];
     splitPts[0] = 0;
@@ -670,4 +624,5 @@ public final class DHistogram extends Iced<DHistogram> {
     Arrays.sort(splitPts);
     return splitPts;
   }
+
 }

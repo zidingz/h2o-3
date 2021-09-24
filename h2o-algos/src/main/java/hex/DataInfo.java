@@ -134,13 +134,13 @@ public class DataInfo extends Keyed<DataInfo> {
   public Model.InteractionSpec _interactionSpec; // formal specification of interactions
   public int _interactionVecs[]; // the interaction columns appearing in _adaptedFrame
   public int[] _numOffsets; // offset column indices used by numerical interactions: total number of numerical columns is given by _numOffsets[_nums] - _numOffsets[0]
-  public int responseChunkId(int n){return n + _cats + _nums + (_weights?1:0) + (_offset?1:0) + (_fold?1:0) + (_treatment ?1:0);}
+  public int responseChunkId(int n){return n + _cats + _nums + (_weights?1:0) + (_offset?1:0) + (_fold?1:0) + (_treatment?1:0);}
   public int treatmentChunkId(){return _cats + _nums + (_weights?1:0) + (_offset?1:0) + (_fold?1:0);}
   public int foldChunkId(){return _cats + _nums + (_weights?1:0) + (_offset?1:0);}
   public int offsetChunkId(){return _cats + _nums + (_weights ?1:0);}
   public int weightChunkId(){return _cats + _nums;}
   public int outputChunkId() { return outputChunkId(0);}
-  public int outputChunkId(int n) { return n + _cats + _nums + (_weights?1:0) + (_offset?1:0) + (_fold?1:0) + (_treatment ?1:0) + _responses;}
+  public int outputChunkId(int n) { return n + _cats + _nums + (_weights?1:0) + (_offset?1:0) + (_fold?1:0) + (_treatment?1:0) + _responses;}
   public void addOutput(String name, Vec v) {_adaptedFrame.add(name,v);}
   public Vec getOutputVec(int i) {return _adaptedFrame.vec(outputChunkId(i));}
   public void setResponse(String name, Vec v){ setResponse(name,v,0);}
@@ -152,7 +152,7 @@ public class DataInfo extends Keyed<DataInfo> {
   public final int [][] _catLvls; // cat lvls post filter (e.g. by strong rules)
   public final int [][] _intLvls; // interaction lvls post filter (e.g. by strong rules)
 
-  private DataInfo() {  _intLvls=null; _catLvls = null; _skipMissing = true; _imputeMissing = false; _valid = false; _offset = false; _weights = false; _fold = false; _treatment =false;}
+  private DataInfo() {  _intLvls=null; _catLvls = null; _skipMissing = true; _imputeMissing = false; _valid = false; _offset = false; _weights = false; _fold = false; _treatment=false;}
   public String[] _coefNames;
   public int[] _coefOriginalIndices; // 
   @Override protected long checksum_impl() {throw H2O.unimpl();} // don't really need checksum
@@ -333,7 +333,7 @@ public class DataInfo extends Keyed<DataInfo> {
         numIdx++;
       }
     }
-    for(int i = names.length - nResponses - (weight?1:0) - (offset?1:0) - (fold?1:0) - (treatment?1:0); i < names.length; ++i) {
+    for(int i = names.length-nResponses - (weight?1:0) - (offset?1:0) - (fold?1:0) - (treatment?1:0); i < names.length; ++i) {
       names[i] = train._names[i];
       tvecs2[i] = train.vec(i);
     }
@@ -599,7 +599,7 @@ public class DataInfo extends Keyed<DataInfo> {
         normMul[k-id] = _normMul[cols[k]-off];
     }
     DataInfo dinfo = new DataInfo(this,f,normMul,normSub,catLvls,intLvls,catModes,cols);
-    dinfo._nums=f.numCols()-dinfo._cats - dinfo._responses - (dinfo._offset?1:0) - (dinfo._weights?1:0) - (dinfo._fold?1:0) - (dinfo._treatment ?1:0);
+    dinfo._nums=f.numCols()-dinfo._cats - dinfo._responses - (dinfo._offset?1:0) - (dinfo._weights?1:0) - (dinfo._fold?1:0) - (dinfo._treatment?1:0);
     dinfo._numMeans=new double[nnums];
     dinfo._numNAFill=new double[nnums];
     int colsSize = id+nnums;  // small optimization

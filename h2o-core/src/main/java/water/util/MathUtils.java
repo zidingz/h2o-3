@@ -16,8 +16,6 @@ import water.fvec.Vec;
 import java.math.BigInteger;
 import java.util.Arrays;
 
-import static java.lang.Math.log;
-
 public class MathUtils {
 
   /**
@@ -34,10 +32,10 @@ public class MathUtils {
     if(y <= 100) {
       double l = 0;
       for (long i = 2; i <= y; ++i)
-        l += log(i);
+        l += Math.log(i);
       return l;
     }
-    return y * log(y) - y + .5* log(2*Math.PI*y);
+    return y * Math.log(y) - y + .5*Math.log(2*Math.PI*y);
   }
 
   public static int combinatorial(int num, int d) {
@@ -287,7 +285,7 @@ public class MathUtils {
    *  @return log(x) with up to 0.1% relative error */
   public static double approxLog(double x){
     if (x > 1) return ((Double.doubleToLongBits(x) >> 32) - 1072632447d) / 1512775d;
-    else return log(x);
+    else return Math.log(x);
   }
   /** Fast calculation of log base 2 for integers.
    *  @return log base 2 of n */
@@ -298,9 +296,9 @@ public class MathUtils {
   public static int log2(long n) {
     return 63 - Long.numberOfLeadingZeros(n);
   }
-  private static final double LOG2 = log(2);
+  private static final double LOG2 = Math.log(2);
   public static double log2(double x) {
-    return log(x) / LOG2;
+    return Math.log(x) / LOG2;
   }
 
   public static float[] div(float[] nums, float n) {
@@ -770,7 +768,7 @@ public class MathUtils {
   public static double y_log_y(double y, double mu) {
     if(y == 0)return 0;
     if(mu < Double.MIN_NORMAL) mu = Double.MIN_NORMAL;
-    return y * log(y / mu);
+    return y * Math.log(y / mu);
   }
 
   /** Compare signed longs */
@@ -799,9 +797,9 @@ public class MathUtils {
    */
   public static double logloss(double err) {
     assert(err >= 0 && err <= 1) : "Logloss is only defined for values in 0...1, but got " + err;
-    return Math.min(MAXLL, -log(1.0-err));
+    return Math.min(MAXLL, -Math.log(1.0-err));
   }
-  final static double MAXLL = -log(1e-15); //34.53878
+  final static double MAXLL = -Math.log(1e-15); //34.53878
   
   public static double[][] arrayTranspose(double[][] arr) {
     assert arr!=null:"null array";

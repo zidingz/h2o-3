@@ -360,7 +360,7 @@ class ModelMetricsHandler extends Handler {
     Vec weights = null;
     if (null != s.weights_frame) {
       Frame weightsFrame = DKV.getGet(s.weights_frame);
-      if (null == weightsFrame) throw new H2OKeyNotFoundArgumentException("weights_frame", "make", s.weights_frame);
+      if (null == weightsFrame) throw new H2OKeyNotFoundArgumentException("weights_frame", "make", s.actuals_frame);
       weights = weightsFrame.anyVec();
     }
     

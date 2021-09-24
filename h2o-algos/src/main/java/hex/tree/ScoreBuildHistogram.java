@@ -57,7 +57,6 @@ public class ScoreBuildHistogram extends MRTask<ScoreBuildHistogram> {
     _nidIdx = nidIdx;
     _treatmentIdx = treatmentIdx;
   }
-  
   public ScoreBuildHistogram dfork2(byte[] types, Frame fr, boolean run_local) {
     return dfork(types,fr,run_local);
   }
@@ -95,7 +94,6 @@ public class ScoreBuildHistogram extends MRTask<ScoreBuildHistogram> {
       }
     }
   }
-  
   @Override public void reduce( ScoreBuildHistogram sbh ) {
     // Merge histograms
     if( sbh._hcs == _hcs )

@@ -85,7 +85,11 @@ public class DTree extends Iced {
     }
     _cols = activeCols;
   }
-  
+
+  /**
+   * Copy constructor
+   * @param tree
+   */
   public DTree(DTree tree){
     _names = tree._names;
     _ncols = tree._ncols;
@@ -149,9 +153,13 @@ public class DTree extends Iced {
     }
 
     Node( DTree tree, int pid, int nid, boolean copy) {
-        _tree = tree;
-        _pid = pid;
+      _tree = tree;
+      _pid = pid;
+      if(copy) {
         _nid = nid;
+      } else {
+        _nid = tree.newIdx(this);
+      }    
     }
     
     // Recursively print the decision-line from tree root to this child.
@@ -184,7 +192,7 @@ public class DTree extends Iced {
     final double _tree_p0, _tree_p1;
     final double _p0Treat, _p0Contr, _p1Treat, _p1Contr; // uplift predictions
     final double _n0Treat, _n0Contr, _n1Treat, _n1Contr;
-
+    
     public Split(int col, int bin, DHistogram.NASplitDir nasplit, IcedBitSet bs, byte equal, double se, double se0, double se1, double n0, double n1, double p0, double p1, double tree_p0, double tree_p1) {
       assert nasplit != DHistogram.NASplitDir.None;
       assert nasplit != DHistogram.NASplitDir.NAvsREST || bs == null : "Split type NAvsREST shouldn't have a bitset";
@@ -216,7 +224,6 @@ public class DTree extends Iced {
       _p0Treat = p0Treat; _p0Contr = p0Contr; _p1Treat = p1Treat; _p1Contr = p1Contr;
       _n0Treat = n0Treat; _n0Contr = n0Contr; _n1Treat = n1Treat; _n1Contr = n1Contr;
     }
-    
     public final double pre_split_se() { return _se; }
     public final double se() { return _se0+_se1; }
     public final int   col() { return _col; }
@@ -332,7 +339,7 @@ public class DTree extends Iced {
           min = h._min;         // Then no improvement over last go
           maxEx = h._maxEx;
         } else {                // Else pick up tighter observed bounds
-          min = h.findMin();   // Tracked inclusive lower bound
+          min = h.find_min();   // Tracked inclusive lower bound
           if( h.find_maxIn() == min )
             continue; // This column will not split again
           maxEx = h.find_maxEx(); // Exclusive max
@@ -581,7 +588,6 @@ public class DTree extends Iced {
     public UndecidedNode makeUndecidedNode(DHistogram hs[], Constraints cs) {
       return new UndecidedNode(_tree, _nid, hs, cs);
     }
-    
 
     // Pick the best column from the given histograms
     public Split bestCol(UndecidedNode u, DHistogram hs[], Constraints cs) {
@@ -883,7 +889,6 @@ public class DTree extends Iced {
         abAux.put4f((float)_split._se1);
         abAux.put4(_nids[0]);
         abAux.put4(_nids[1]);
-        
       }
 
       Node left = _tree.node(_nids[0]);
@@ -950,8 +955,7 @@ public class DTree extends Iced {
     assert ab.position() == sz;
     return new CompressedTree(ab.buf(), _seed,tid,cls);
   }
-
-
+  
   static Split findBestSplitPoint(DHistogram hs, int col, double min_rows, int constraint, double min, double max,
                                   boolean useBounds, Distribution dist) {
     if(hs._vals == null) {
@@ -969,7 +973,7 @@ public class DTree extends Iced {
     // (for an ordered predictor), or sorted by the mean response (for an
     // unordered predictor, i.e. categorical predictor).
     double[]   vals =   hs._vals;
-    final int vals_dim = hs._vals_dim;
+    final int vals_dim = hs._vals_dim; 
     int idxs[] = null;          // and a reverse index mapping
 
     // For categorical (unordered) predictors, sort the bins by average
@@ -1159,7 +1163,7 @@ public class DTree extends Iced {
                         Math.abs(b - (nbins >> 1)) < Math.abs(best - (nbins >> 1)))) {
           double tmpPredLeft;
           double tmpPredRight;
-          if(constraint != 0 && dist._family.equals(DistributionFamily.quantile)) {
+          if(constraint != 0 && dist._family.equals(DistributionFamily.quantile)) { 
             int quantileBinLeft = 0;
             int quantileBinRight = 0;
             for (int bin = 1; bin <= nbins; bin++) {
@@ -1182,7 +1186,7 @@ public class DTree extends Iced {
               }
             }
             tmpPredLeft = wYlo[quantileBinLeft];
-            tmpPredRight = wYlo[quantileBinRight] - wYlo[b];
+            tmpPredRight = wYlo[quantileBinRight] - wYlo[b]; 
           } else {
             tmpPredLeft = hasDenom ? nomlo[b] / denlo[b] : wYlo[b] / wlo[b];
             tmpPredRight = hasDenom ? nomhi[b] / denhi[b] : wYhi[b] / whi[b];
@@ -1237,7 +1241,7 @@ public class DTree extends Iced {
                 }
                 tmpPredLeft = wYlo[quantileBinLeft] + wYNA;
                 tmpPredRight = wYlo[quantileBinRight] - wYlo[b];
-              } else {
+              } else { 
                 tmpPredLeft = hasDenom ? (nomlo[b] + nomNA) / (denlo[b] + denNA) : (wYlo[b] + wYNA) / (wlo[b] + wNA);
                 tmpPredRight = hasDenom ? nomhi[b] / denhi[b] : wYhi[b] / whi[b];
               }
@@ -1447,7 +1451,7 @@ public class DTree extends Iced {
     if (nasplit == DHistogram.NASplitDir.None) {
       nasplit = nLeft > nRight ? DHistogram.NASplitDir.Left : DHistogram.NASplitDir.Right;
     }
-
+    
     assert constraint == 0 || constraint * tree_p0 <= constraint * tree_p1;
     assert (Double.isNaN(min) || min <= tree_p0) && (Double.isNaN(max) || tree_p0 <= max);
     assert (Double.isNaN(min) || min <= tree_p1) && (Double.isNaN(max) || tree_p1 <= max);

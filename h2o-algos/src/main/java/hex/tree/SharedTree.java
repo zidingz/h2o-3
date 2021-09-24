@@ -8,7 +8,6 @@ import hex.util.CheckpointUtils;
 import hex.util.LinearAlgebraUtils;
 import jsr166y.CountedCompleter;
 import org.apache.log4j.Logger;
-import org.apache.log4j.Priority;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import water.*;
@@ -165,9 +164,8 @@ public abstract class SharedTree<
         error("_min_rows", "The dataset size is too small to split for min_rows=" + _parms._min_rows
                 + ": must have at least " + 2*_parms._min_rows + " (weighted) rows, but have only " + sumWeights + ".");
     }
-    if( _train != null ) {
-      _ncols = _train.numCols() - (isSupervised() ? 1 : 0) - numSpecialCols();
-    }
+    if( _train != null )
+      _ncols = _train.numCols()-(isSupervised()?1:0)-numSpecialCols();
     
     PlattScalingHelper.initCalibration(this, _parms, expensive);
 
@@ -518,7 +516,7 @@ public abstract class SharedTree<
   }
   
   // --------------------------------------------------------------------------
-  // Build an entire layer of uplift tree
+  // Build an entire layer of all K trees
   protected DHistogram[][][] buildLayer(final Frame fr, final int nbins, final DTree ktrees[], final int leafs[], final DHistogram hcs[][][], boolean build_tree_one_node) {
     // Build K trees, one per class.
 
@@ -526,25 +524,16 @@ public abstract class SharedTree<
     // Nearly all leaves will split one more level.  This loop nest is
     //           O( #active_splits * #bins * #ncols )
     // but is NOT over all the data.
-    DTree tmpTree =  new DTree(ktrees[0]);
     ScoreBuildOneTree sb1ts[] = new ScoreBuildOneTree[_nclass];
     Vec vecs[] = fr.vecs();
     for( int k=0; k<_nclass; k++ ) {
-      DTree tree = ktrees[k]; // Tree for class K
+      final DTree tree = ktrees[k]; // Tree for class K
+      if( tree == null ) continue;
       // Build a frame with just a single tree (& work & nid) columns, so the
       // nested MRTask ScoreBuildHistogram in ScoreBuildOneTree does not try
       // to close other tree's Vecs when run in parallel.
-      if(isUplift() && k==1){
-        ktrees[k] = new DTree(tmpTree);
-        tree = ktrees[k]; // Tree for class K
-      }
-      if( tree == null ) continue;
-      int selectedCol = _ncols + 1;
-      if(isUplift()){
-        selectedCol++;
-      }
-      final String[] fr2cols = Arrays.copyOf(fr._names, selectedCol);
-      final Vec[] fr2vecs = Arrays.copyOf(vecs, selectedCol);
+      final String[] fr2cols = Arrays.copyOf(fr._names,_ncols+1);
+      final Vec[] fr2vecs = Arrays.copyOf(vecs,_ncols+1);
       if (DEBUG_PUBDEV_6686) {
         boolean hasNull = false;
         for (Vec v : fr2vecs) {
@@ -571,7 +560,7 @@ public abstract class SharedTree<
       // Add temporary workspace vectors (optional weights are taken over from fr)
       int respIdx = fr2.find(_parms._response_column);
       int weightIdx = fr2.find(_parms._weights_column);
-      int treatmentIdx = fr2.find(_parms._treatment_column);
+      int treatmentIdx = -1;
       int predsIdx = fr2.numCols(); fr2.add(fr._names[idx_tree(k)],vecs[idx_tree(k)]); //tree predictions
       int workIdx =  fr2.numCols(); fr2.add(fr._names[idx_work(k)],vecs[idx_work(k)]); //target value to fit (copy of actual response for DRF, residual for GBM)
       int nidIdx  =  fr2.numCols(); fr2.add(fr._names[idx_nids(k)],vecs[idx_nids(k)]); //node indices for tree construction
@@ -605,7 +594,7 @@ public abstract class SharedTree<
   }
 
   protected DHistogram[][][] buildLayer(final Frame fr, final int nbins, final DTree tree, final int leafs[], final DHistogram hcs[][][], boolean build_tree_one_node) {
-    // Build K trees, one per class.
+    // Build 1 uplift tree
 
     // Build up the next-generation tree splits from the current histograms.
     // Nearly all leaves will split one more level.  This loop nest is
@@ -619,9 +608,6 @@ public abstract class SharedTree<
     int k = 0;
     if( tree != null ) { 
       int selectedCol = _ncols + 2;
-      if(isUplift()){
-        selectedCol++;
-      }
       final String[] fr2cols = Arrays.copyOf(fr._names, selectedCol);
       final Vec[] fr2vecs = Arrays.copyOf(vecs, selectedCol);
       Frame fr2 = new Frame(fr2cols, fr2vecs); //predictors, weights and the actual response
